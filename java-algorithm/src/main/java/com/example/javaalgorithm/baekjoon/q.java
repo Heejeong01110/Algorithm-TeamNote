@@ -1,3 +1,5 @@
+package com.example.javaalgorithm.baekjoon;
+
 import java.io.*;
 import java.util.*;
 

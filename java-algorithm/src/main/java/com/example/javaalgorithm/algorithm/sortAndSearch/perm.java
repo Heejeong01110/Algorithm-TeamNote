@@ -1,3 +1,5 @@
+package com.example.javaalgorithm.algorithm.sortAndSearch;
+
 public class perm {
   public static void main(String[] args) {
     int[] arr = { 1, 2, 3 };
@@ -7,7 +9,7 @@ public class perm {
   }
   
   // 서로 다른 n개에서 r개를 뽑아서 정렬하는 경우의 수
-  public static void permutation(int[] arr, int[] out, boolean[] visited, int depth, int r) {
+  private static void permutation(int[] arr, int[] out, boolean[] visited, int depth, int r) {
     if (depth == r) {
       for (int num : out)
         System.out.print(num);
@@ -26,7 +28,7 @@ public class perm {
 
 
   // 서로 다른 n개에서 중복이 가능하게 r개를 뽑아서 정렬하는 경우의 수
-  public static void permutation2(int[] arr, int[] out, int depth, int r) {
+  private static void permutation2(int[] arr, int[] out, int depth, int r) {
     if (depth == r) {
       for (int num : out)
         System.out.print(num);
@@ -35,7 +37,7 @@ public class perm {
     }
     for (int i = 0; i < arr.length; i++) {
       out[depth] = arr[i];
-      permutation(arr, out, depth + 1, r);
+      permutation2(arr, out, depth + 1, r);
     }
   }
 }
