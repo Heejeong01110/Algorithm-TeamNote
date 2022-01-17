@@ -1,11 +1,11 @@
 HELP.md
-java-algorithm/.gradle
-java-algorithm/build/
-java-algorithm/!gradle/wrapper/gradle-wrapper.jar
+.gradle
+build/
+!gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
 
-java-algorithm//src/main/generated/
+/src/main/generated/
 generated
 
 ### STS ###
@@ -21,11 +21,11 @@ bin/
 !**/src/test/**/bin/
 
 ### IntelliJ IDEA ###
-java-algorithm/.idea
+.idea
 *.iws
 *.iml
 *.ipr
-java-algorithm/out/
+out/
 !**/src/main/**/out/
 !**/src/test/**/out/
 
