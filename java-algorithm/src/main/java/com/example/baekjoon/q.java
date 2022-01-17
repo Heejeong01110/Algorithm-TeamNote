@@ -10,6 +10,8 @@ public class q {
 
     public static void main(String[] args) throws IOException {
         inputData();
+
+        output(Solution());
     }
 
     private static void inputData() throws IOException {
@@ -21,6 +23,14 @@ public class q {
         M = Integer.parseInt(st.nextToken());
 
         br.close();
+    }
+
+    private static Integer Solution(){
+        return null;
+    }
+
+    private static void output(Integer result) {
+        System.out.println(result);
     }
 
 }
