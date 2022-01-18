@@ -9,8 +9,11 @@ public class q {
     private static Integer M;
 
     public static void main(String[] args) throws IOException {
-        inputData();
+        run();
+    }
 
+    public static void run() throws IOException {
+        inputData();
         output(Solution());
     }
 
@@ -30,7 +33,7 @@ public class q {
     }
 
     private static void output(Integer result) {
-        System.out.println(result);
+        System.out.print(result);
     }
 
 }
