@@ -8,12 +8,10 @@ public class s81303 {
   public static String solution(int n, int k, String[] cmd) {
     // n : 표의 행 개수
     // k : 처음에 선택된 행의 위치
-    String answer = "";
 
     Node[] nodes = new Node[n];
     for (int i = 0; i < n; i++) {
       nodes[i] = new Node();
-      nodes[i].index = i;
     }
 
     for (int i = 1; i < n; i++) {
@@ -40,18 +38,19 @@ public class s81303 {
         }
         case "C" -> {
           currentNode.removed = true;
+          deleteNode.push(currentNode);
 
           Node prev = currentNode.prev;
-          if(prev != null){
-            prev.next = currentNode.next;
-          }
           Node next = currentNode.next;
+
+          if(prev != null){
+            prev.next = next;
+          }
+
           if(next != null){
-            next.prev = currentNode.prev;
-            deleteNode.push(currentNode);
+            next.prev = prev;
             currentNode = next;
           }else{
-            deleteNode.push(currentNode);
             currentNode = prev;
           }
         }
@@ -59,13 +58,14 @@ public class s81303 {
         case "Z" -> {
           Node repair = deleteNode.pop();
 
-          repair.removed = false;
-
           Node prev = repair.prev;
+          Node next = repair.next;
+
+          repair.removed = false;
           if(prev != null){
             prev.next = repair;
           }
-          Node next = repair.next;
+
           if(next != null){
             next.prev = repair;
           }
@@ -74,19 +74,20 @@ public class s81303 {
 
     }
 
+    StringBuilder answer = new StringBuilder();
+
     for (int i = 0; i < n; i++) {
       if (nodes[i].removed) {
-        answer += "X";
+        answer.append("X");
       } else {
-        answer += "O";
+        answer.append("O");
       }
     }
 
-    return answer;
+    return answer.toString();
   }
 
   static class Node {
-    int index;
     boolean removed;
     Node prev;
     Node next;
