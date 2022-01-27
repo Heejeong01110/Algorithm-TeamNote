@@ -1,94 +1,88 @@
 package com.example.programmers;
 
+import java.util.Comparator;
+import java.util.PriorityQueue;
+
 //경주로 건설
 public class s67259 {
 
-  static int[] makeRoadCost = {100, 500};
-  private static int[] dr = {1, 0, -1, 0};
+  private static int[] dr = {1, 0, -1, 0}; //하좌상우
   private static int[] dc = {0, 1, 0, -1};
   private static int width, minCost;
 
   public static int solution(int[][] board) {
-    width = board.length - 1;
+    width = board.length;
     minCost = Integer.MAX_VALUE;
 
-    boolean[][] visited = new boolean[board.length][board.length];
-    for (int i = 0; i < visited.length; i++) {
-      for (int j = 0; j < visited.length; j++) {
-        visited[i][j] = (board[i][j] == 1);
-      }
+    boolean[][][] visited;
+    for (int i = 0; i < 4; i++) {
+      visited = new boolean[board.length][board.length][4];
+      bfs(visited, board, i);
     }
-
-    dfs(visited, null, new Node(0, 0), 0);
 
     return minCost;
   }
 
-  public static void dfs(boolean[][] visited, Node beforeNode, Node currentNode,
-      int cost) {
-    if (cost >= minCost) {//이전 최저금액 이상일 시 탐색 종료
-      return;
-    }
+  private static void bfs(boolean[][][] visited, int[][] board, int dir) {
+    PriorityQueue<Node> queue = new PriorityQueue<>(Comparator.comparing(o -> o.cost));
 
-    if (currentNode.isEnd()) { //종점 도착시 탐색 종료
-      minCost = Math.min(minCost, cost);
-      return;
-    }
+    queue.add(new Node(0,0,0,dir));
 
-    for (int i = 0; i < 4; i++) {
-      Node moveNode = new Node(currentNode.row + dr[i], currentNode.col + dc[i]);
-      if (isPossibleVisit(visited, moveNode)) { //방문 가능
-        visited[moveNode.row][moveNode.col] = true;
-        dfs(visited, currentNode, moveNode, cost + addCost(beforeNode, moveNode));
-        visited[moveNode.row][moveNode.col] = false;
+    while (!queue.isEmpty()) {
+      Node currentNode = queue.poll();
+
+      if (currentNode.row == width - 1 && currentNode.col == width - 1) {
+        minCost = Math.min(minCost, currentNode.cost);
+        return;
+      }
+
+      if (visited[currentNode.row][currentNode.col][currentNode.dir]) {
+        continue;
+      }
+      visited[currentNode.row][currentNode.col][currentNode.dir] = true;
+
+      for (int i = 0; i < 4; i++) {
+        int row = currentNode.row + dr[i];
+        int col = currentNode.col + dc[i];
+        if (!isPossibleVisit(board, row, col)) {
+          continue;
+        }
+
+        if (currentNode.dir == i) {
+          queue.add(new Node(row, col, currentNode.cost + 100, i));
+        } else {
+          queue.add(new Node(row, col, currentNode.cost + 600, i));
+
+        }
+
       }
     }
-
   }
 
-  private static int addCost(Node beforeNode, Node moveNode) {
-    if (beforeNode == null) {
-      //출발점 옆일 때
-      return makeRoadCost[0];
-    }
-    if (beforeNode.row == moveNode.row || beforeNode.col == moveNode.col) {
-      //직진도로 2개
-      return makeRoadCost[0];
-    } else {
-      //곡선도로 포함
-      return makeRoadCost[0] + makeRoadCost[1];
-    }
-
-  }
-
-  private static boolean isPossibleVisit(boolean[][] visited, Node moveNode) {
-    if (moveNode.row < 0 || moveNode.col < 0 || moveNode.row > width || moveNode.col > width) {
+  private static boolean isPossibleVisit(int[][] board, int row, int col) {
+    if (row < 0 || col < 0 || row >= width || col >= width) {
       return false;
     }
 
-    if (visited[moveNode.row][moveNode.col]) {
+    if (board[row][col] == 1) {
       return false;
     }
 
     return true;
   }
 
-
   private static class Node {
 
     int row;
     int col;
+    int cost;
+    int dir;
 
-    public Node(int row, int col) {
+    public Node(int row, int col, int cost, int dir) {
       this.row = row;
       this.col = col;
-    }
-
-    public boolean isEnd() {
-      if (row == width && col == width) {
-        return true;
-      }
-      return false;
+      this.cost = cost;
+      this.dir = dir;
     }
   }
 
