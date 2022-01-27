@@ -43,14 +43,14 @@ public class s81303 {
           Node prev = currentNode.prev;
           Node next = currentNode.next;
 
-          if(prev != null){
+          if (prev != null) {
             prev.next = next;
           }
 
-          if(next != null){
+          if (next != null) {
             next.prev = prev;
             currentNode = next;
-          }else{
+          } else {
             currentNode = prev;
           }
         }
@@ -62,11 +62,11 @@ public class s81303 {
           Node next = repair.next;
 
           repair.removed = false;
-          if(prev != null){
+          if (prev != null) {
             prev.next = repair;
           }
 
-          if(next != null){
+          if (next != null) {
             next.prev = repair;
           }
         }
@@ -87,7 +87,8 @@ public class s81303 {
     return answer.toString();
   }
 
-  static class Node {
+  private static class Node {
+
     boolean removed;
     Node prev;
     Node next;
