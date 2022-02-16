@@ -1,58 +1,88 @@
 package com.example.programmers;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 
 // 길 찾기 게임
 public class s42892 {
 
-  private static Node root; //초기 root
+  private static int[][] result;
+  private static int idx;
 
   public static int[][] solution(int[][] nodeinfo) {
-    int[][] answer = {};
-
-    ArrayList<Node> nodes = new ArrayList<>();
+    Node[] node = new Node[nodeinfo.length];
 
     for (int i = 0; i < nodeinfo.length; i++) {
-      nodes.add(new Node(i + 1, nodeinfo[i][0], nodeinfo[i][1]));
+      node[i] = new Node(nodeinfo[i][0], nodeinfo[i][1], i + 1, null, null);
     }
 
-    nodes.sort((o1, o2) -> {
-      if (o1.level == o2.level) {
-        return o2.value - o1.value;
+    Arrays.sort(node, (n1, n2) -> {
+      if (n1.y == n2.y) {
+        return n1.x - n2.x;
+      } else {
+        return n2.y - n1.y;
       }
-      return o1.level - o2.level;
     });
 
-    root = nodes.get(0);
-    int index = 1;
-
-    for (int i = root.level - 1; i > 0; i--) {
-      Node parent = nodes.get(index);
-      Node current = nodes.get(index);
-      while (current.level == i - 1) {
-
-        index += 1;
-        current = nodes.get(index);
-      }
-
+    Node root = node[0];
+    for (int i = 1; i < node.length; i++) {
+      insertNode(root, node[i]);
     }
 
-    return answer;
+    result = new int[2][nodeinfo.length];
+    idx = 0;
+    preorder(root); //전위 순회
+    idx = 0;
+    postorder(root); //후위 순회
+    return result;
+  }
+
+  private static void insertNode(Node parent, Node child) {
+    if (parent.x > child.x) {
+      if (parent.left == null) {
+        parent.left = child;
+      } else {
+        insertNode(parent.left, child);
+      }
+    } else {
+      if (parent.right == null) {
+        parent.right = child;
+      } else {
+        insertNode(parent.right, child);
+      }
+    }
+  }
+
+  private static void preorder(Node root) {
+    if (root != null) {
+      result[0][idx++] = root.value;
+      preorder(root.left);
+      preorder(root.right);
+    }
+  }
+
+  private static void postorder(Node root) {
+    if (root != null) {
+      postorder(root.left);
+      postorder(root.right);
+      result[1][idx++] = root.value;
+    }
   }
 
   private static class Node {
 
-    int index;
+    int x;
+    int y;
     int value;
-    int level;
 
     Node left;
     Node right;
 
-    public Node(int index, int value, int level) {
-      this.index = index;
+    public Node(int x, int y, int value, Node left, Node right) {
+      this.x = x;
+      this.y = y;
       this.value = value;
-      this.level = level;
+      this.left = left;
+      this.right = right;
     }
   }
 
