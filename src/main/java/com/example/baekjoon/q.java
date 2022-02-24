@@ -7,8 +7,8 @@ import java.util.StringTokenizer;
 
 public class q {
 
-  private static Integer N;
-  private static Integer M;
+  private static int N;
+  private static int M;
 
   public static void main(String[] args) throws IOException {
     run();
@@ -18,8 +18,8 @@ public class q {
     inputData();
     output(Solution());
   }
-    
-  private static void output(Integer result) {
+
+  private static void output(int result) {
     System.out.print(result);
   }
 
@@ -33,7 +33,7 @@ public class q {
     br.close();
   }
 
-  private static Integer Solution() {
+  private static int Solution() {
     return null;
   }
 
