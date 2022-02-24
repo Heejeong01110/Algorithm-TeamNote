@@ -34,7 +34,7 @@ public class q {
   }
 
   private static int Solution() {
-    return null;
+    return 0;
   }
 
 }
