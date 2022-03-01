@@ -2,6 +2,7 @@ package com.example.programmers;
 
 import java.util.Arrays;
 
+//외벽 점검
 public class s60062 {
 
   private static Integer result = 0;
