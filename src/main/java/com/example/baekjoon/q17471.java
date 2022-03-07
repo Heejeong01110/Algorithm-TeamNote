@@ -5,11 +5,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
 import java.util.Queue;
 import java.util.StringTokenizer;
 
@@ -18,7 +14,6 @@ public class q17471 {
   private static int N;
   private static HashMap<Integer, Node> nodes;
   private static int result;
-  private static ArrayList<String> partMemo;
 
 
   public static void main(String[] args) throws IOException {
@@ -58,41 +53,36 @@ public class q17471 {
 
   private static int Solution() {
     result = Integer.MAX_VALUE;
-    partMemo = new ArrayList<>();
-    HashMap<Integer, Node> memoMap = new HashMap<>();
-    for (int i = 1; i <= N; i++) {
-      memoMap.put(i, nodes.get(i));
-      dfs(i, memoMap);
-      memoMap.remove(i);
+
+    for (int i = 1; i <= N / 2; i++) {
+      comb(new boolean[N + 1], 1, 0, i);
     }
 
     if (result == Integer.MAX_VALUE) {
       result = -1;
     }
+
     return result;
   }
 
-  private static void dfs(int currentIndex, HashMap<Integer, Node> memo) {
-    String listStr = "";
-    List<Map.Entry<Integer, Node>> entryList = new LinkedList<>(memo.entrySet());
-    entryList.sort(Comparator.comparingInt(Map.Entry::getKey));
+  private static void comb(boolean[] visited, int start, int depth, int r) {
+    if (depth == r) {
+      ArrayList<Integer> aAry = new ArrayList<>();
+      ArrayList<Integer> bAry = new ArrayList<>();
+      for (int i = 1; i <= N; i++) {
+        if (visited[i]) {
+          aAry.add(i);
+        } else {
+          bAry.add(i);
+        }
+      }
 
-    for (Map.Entry<Integer, Node> entry : entryList) {
-      listStr = listStr + entry.getKey() + " ";
-    }
-
-    if (partMemo.contains(listStr)) {
-      return;
-    }
-
-    partMemo.add(listStr);
-    Integer a = 0;
-    Integer b = 0;
-    if (memo.size() > 0 && memo.size() < N) {
-      if (isConnectB(memo)) {
+      if (isConnect(aAry) && isConnect(bAry)) {
+        Integer a = 0;
+        Integer b = 0;
         for (int i = 1; i <= N; i++) {
-          if (memo.containsKey(i)) {
-            a += memo.get(i).value;
+          if (visited[i]) {
+            a += nodes.get(i).value;
           } else {
             b += nodes.get(i).value;
           }
@@ -101,53 +91,45 @@ public class q17471 {
         int inter = Math.abs(a - b);
         result = Math.min(result, inter);
       }
+      return;
     }
 
-    for (int i = 0; i < nodes.get(currentIndex).neighbors.size(); i++) {
-      if (!memo.containsKey(nodes.get(currentIndex).neighbors.get(i))) {
-        memo.put(nodes.get(currentIndex).neighbors.get(i),
-            nodes.get(nodes.get(currentIndex).neighbors.get(i)));
-        dfs(nodes.get(currentIndex).neighbors.get(i), memo);
-        memo.remove(nodes.get(currentIndex).neighbors.get(i));
+    for (int i = start; i <= N; i++) {
+      if (!visited[i]) {
+        visited[i] = true;
+        comb(visited, i + 1, depth + 1, r);
+        visited[i] = false;
       }
     }
-
 
   }
 
-  private static boolean isConnectB(HashMap<Integer, Node> memo) {
-    HashMap<Integer, Node> bNeighbors = new HashMap<>();
-    Integer anyKey = -1;
-    for (int i = 1; i <= N; i++) {
-      if (!memo.containsKey(i)) {
-        bNeighbors.put(i, nodes.get(i));
-        anyKey = i;
-      }
-    }
-
-    Queue<Node> queue = new ArrayDeque<>();
+  private static boolean isConnect(ArrayList<Integer> ary) {
+    Queue<Integer> queue = new ArrayDeque<>();
     boolean[] visited = new boolean[N + 1];
-
-    queue.add(bNeighbors.get(anyKey));
+    queue.add(ary.get(0));
 
     while (!queue.isEmpty()) {
-      Node now = queue.poll();
-      visited[now.index] = true;
+      Integer now = queue.poll();
+      visited[now] = true;
 
-      for (int j = 0; j < now.neighbors.size(); j++) {
-        if (bNeighbors.containsKey(now.neighbors.get(j)) && !visited[now.neighbors.get(j)]) {
-          queue.add(nodes.get(now.neighbors.get(j)));
+      for (int j = 0; j < nodes.get(now).neighbors.size(); j++) {
+        if (ary.contains(nodes.get(now).neighbors.get(j)) && !visited[nodes.get(now).neighbors.get(
+            j)]) {
+          queue.add(nodes.get(now).neighbors.get(j));
         }
       }
     }
+
     for (int i = 1; i <= N; i++) {
-      if (bNeighbors.containsKey(i) && !visited[i]) {
+      if (ary.contains(i) && !visited[i]) {
         return false;
       }
     }
 
     return true;
   }
+
 
   private static class Node {
 
