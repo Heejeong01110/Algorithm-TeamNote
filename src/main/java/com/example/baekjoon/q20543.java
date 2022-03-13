@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.StringTokenizer;
 
+//오답
 public class q20543 {
 
   private static int N;
@@ -46,11 +47,6 @@ public class q20543 {
 
   private static StringBuilder Solution() {
     result = new int[N][N];
-
-
-
-
-
 
     for (int i = M / 2; i < N - M / 2; i++) {
       for (int j = M / 2; j < N - M / 2; j++) {
