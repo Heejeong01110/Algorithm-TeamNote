@@ -3,16 +3,14 @@ package com.example.baekjoon;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Queue;
 
 public class q18116 {
 
   private static int N;
   private static String[] inputs;
   private static HashMap<Integer, Integer> robotCounts;
+  private static HashMap<Integer, Integer> parentsList;
 
   public static void main(String[] args) throws IOException {
     run();
@@ -42,7 +40,7 @@ public class q18116 {
 
   private static StringBuilder Solution() {
     StringBuilder sb = new StringBuilder();
-    HashMap<Integer, ArrayList<Integer>> partsList = new HashMap<>();
+    parentsList = new HashMap<>();
     robotCounts = new HashMap<>();
     Integer one;
     Integer two;
@@ -51,54 +49,42 @@ public class q18116 {
       if (input[0].equals("I")) {
         one = Integer.parseInt(input[1]);
         two = Integer.parseInt(input[2]);
+        union(one, two);
 
-        ArrayList<Integer> list = partsList.getOrDefault(one, new ArrayList<>());
-        list.add(two);
-        partsList.put(one, list);
-
-        ArrayList<Integer> list2 = partsList.getOrDefault(two, new ArrayList<>());
-        list2.add(one);
-        partsList.put(two, list2);
       } else {
         one = Integer.parseInt(input[1]);
-        sb.append(bfs(partsList, one)).append("\n");
+        sb.append(robotCounts.getOrDefault(findParent(one), 1)).append("\n");
       }
     }
     return sb;
   }
 
-  private static Integer bfs(HashMap<Integer, ArrayList<Integer>> partsList, Integer start) {
-    if (!partsList.containsKey(start)) {
-      return 1;
-    }
+  private static void union(Integer one, Integer two) {
+    one = findParent(one);
+    two = findParent(two);
 
-    if (robotCounts.containsKey(start)) {
-      return robotCounts.get(start);
-    }
-
-    Integer count = 0;
-    Queue<Integer> queue = new ArrayDeque<>();
-    ArrayList<Integer> visited = new ArrayList<>();
-    queue.add(start);
-
-    while (!queue.isEmpty()) {
-      Integer now = queue.poll();
-      visited.add(now);
-      count++;
-
-      for (int i = 0; i < partsList.get(now).size(); i++) {
-        if (!visited.contains(partsList.get(now).get(i))) {
-          queue.add(partsList.get(now).get(i));
-        }
+    if (one < two) {
+      parentsList.put(two, one);
+      Integer sum = robotCounts.getOrDefault(one, 1) + robotCounts.getOrDefault(two, 1);
+      robotCounts.put(one, sum);
+    } else {
+      if (!one.equals(two)) {
+        parentsList.put(one, two);
+        Integer sum = robotCounts.getOrDefault(one, 1) + robotCounts.getOrDefault(two, 1);
+        robotCounts.put(two, sum);
       }
-
     }
 
-    for (int i = 0; i < visited.size(); i++) {
-      robotCounts.put(visited.get(i), count);
-    }
+  }
 
-    return count;
+  private static int findParent(int x) {
+    if (x == parentsList.getOrDefault(x, x)) {
+      return x;
+    } else {
+      int parent = findParent(parentsList.get(x));
+      parentsList.put(x, parent);
+      return parent;
+    }
   }
 
 }

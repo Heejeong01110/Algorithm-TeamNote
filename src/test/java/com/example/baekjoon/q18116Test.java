@@ -42,5 +42,21 @@ public class q18116Test {
         + "Q 1\n"
         + "Q 4", "3\n"
         + "1\n");
+    testCorrect("5\n"
+        + "I 1 2\n"
+        + "I 3 2\n"
+        + "I 1 3\n"
+        + "Q 1\n"
+        + "Q 4", "3\n"
+        + "1\n");
+    testCorrect("7\n"
+        + "I 1 2\n"
+        + "I 3 2\n"
+        + "Q 1\n"
+        + "I 4 5\n"
+        + "I 4 6\n"
+        + "I 1 4\n"
+        + "Q 1\n", "3\n"
+        + "6\n");
   }
 }
