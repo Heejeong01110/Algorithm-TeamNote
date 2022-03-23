@@ -10,6 +10,7 @@ public class HashMapValueSort {
   public static void main(String[] args) {
     Map<Integer, Integer> map = new HashMap<>();
     map.put(2, 5);
+    map.put(5, 4);
     map.put(1, 4);
     map.put(3, 6);
     map.put(100, 1);
@@ -24,9 +25,12 @@ public class HashMapValueSort {
       System.out.println("key : " + entry.getKey() + ", value : " + entry.getValue());
     }
 
-//key : 1, value : 4
-//key : 2, value : 5
-//key : 3, value : 6
+    // key : 100, value : 1
+    // key : 7, value : 2
+    // key : 1, value : 4
+    // key : 5, value : 4
+    // key : 2, value : 5
+    // key : 3, value : 6
   }
 
 }
