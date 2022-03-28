@@ -4,48 +4,56 @@ import java.util.HashMap;
 
 public class s77486 {
 
-  private static HashMap<String, Person> people = new HashMap<>();
-
   public static int[] solution(String[] enroll, String[] referral, String[] seller, int[] amount) {
-    int[] answer = new int[enroll.length];
+    HashMap<String, Node> nodes = new HashMap<>();
 
-    getPeopleInfo(enroll, referral);
-
-    for(int i = 0; i < seller.length; i++){
-      addAllRef(seller[i], amount[i]);
+    for (int i = 0; i < enroll.length; i++) {
+      nodes.put(enroll[i], new Node(i, enroll[i], null));
     }
 
     for (int i = 0; i < enroll.length; i++) {
-      answer[i] = people.get(enroll[i]).amount;
+      Node parent;
+      if (referral[i].equals( "-")) {
+        parent = null;
+      } else {
+        parent = nodes.get(referral[i]);
+      }
+
+      if (nodes.containsKey(enroll[i])) {
+        nodes.get(enroll[i]).index = i;
+        nodes.get(enroll[i]).parent = parent;
+      }
     }
-    return answer;
+
+    int[] result = new int[nodes.size()];
+    Node now;
+    int nowAmount;
+
+    for (int i=0;i<seller.length;i++) {
+      now = nodes.get(seller[i]);
+      nowAmount = amount[i] * 100;
+
+      while (now.parent != null) {
+        result[now.index] += (nowAmount - nowAmount / 10);
+        nowAmount = nowAmount / 10;
+        now = now.parent;
+      }
+      result[now.index] += (nowAmount - nowAmount / 10);
+    }
+
+    return result;
   }
 
-  private static void addAllRef(String seller, int amount) {
-    int new_benefit = amount * 100;
-    String target = seller;
+  private static class Node {
 
-    while(!target.equals("-")){
-      int benefit_10 = (int)(new_benefit * 0.1 );
-      people.get(target).amount += (new_benefit - benefit_10);
+    int index;
+    String name;
+    Node parent;
 
-      target = people.get(target).referral;
-      new_benefit = benefit_10;
-
-      if(new_benefit == 0)
-        break;
+    public Node(int index, String name, Node parent) {
+      this.index = index;
+      this.name = name;
+      this.parent = parent;
     }
-  }
-
-  private static void getPeopleInfo(String[] enroll, String[] referral) {
-    for (int i = 0; i < enroll.length; i++) {
-      people.put(enroll[i], new Person());
-      people.get(enroll[i]).referral = referral[i];
-    }
-  }
-
-  static class Person {
-    private String referral;
-    private int amount;
   }
 }
