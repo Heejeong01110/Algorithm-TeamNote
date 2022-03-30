@@ -9,15 +9,14 @@ public class s2 {
   private static int width;
 
   public static int solution(int[][] board) {
-    int answer = 0;
     width = board.length;
     boolean[][][] visited = new boolean[width][width][2]; // //0 : 가로, 1 : 세로
     Queue<Node> queue = new ArrayDeque<>();
     queue.add(new Node(0, 0, 0));
     visited[0][0][0] = true;
 
-    Node[] moveNodes = new Node[6];
-    for (int i = 0; i < 6; i++) {
+    Node[] moveNodes = new Node[8];
+    for (int i = 0; i < 8; i++) {
       moveNodes[i] = new Node(0, 0, 0);
     }
 
@@ -28,7 +27,7 @@ public class s2 {
       for (int i = 0; i < size; i++) {
         Node now = queue.poll();
         if (isEnd(now)) {
-          break;
+          return count;
         }
 
         if (now.direct == 0) {
@@ -38,17 +37,21 @@ public class s2 {
           moveNodes[3].setInfo(now.row - 1, now.col + 1, 1);
           moveNodes[4].setInfo(now.row, now.col, 1);
           moveNodes[5].setInfo(now.row - 1, now.col, 1);
+          moveNodes[6].setInfo(now.row + 1, now.col, 0);//위
+          moveNodes[7].setInfo(now.row - 1, now.col, 0);//아래
         } else {
           moveNodes[0].setInfo(now.row + 1, now.col, 1);
           moveNodes[1].setInfo(now.row - 1, now.col, 1);
           moveNodes[2].setInfo(now.row + 1, now.col, 0);
           moveNodes[3].setInfo(now.row, now.col, 0);
-          moveNodes[5].setInfo(now.row + 1, now.col - 1, 0);
-          moveNodes[4].setInfo(now.row, now.col - 1, 0);
+          moveNodes[4].setInfo(now.row + 1, now.col - 1, 0);
+          moveNodes[5].setInfo(now.row, now.col - 1, 0);
+          moveNodes[6].setInfo(now.row, now.col + 1, 1);//좌
+          moveNodes[7].setInfo(now.row, now.col - 1, 1);//우
         }
 
-        for (int j = 0; j < 6; j++) {
-          if (check(board, moveNodes[j])
+        for (int j = 0; j < 8; j++) {
+          if (check(board, moveNodes[j]) && canTurn(now, moveNodes[j], board)
               && !visited[moveNodes[j].row][moveNodes[j].col][moveNodes[j].direct]) {
             Node move = new Node(moveNodes[j].row, moveNodes[j].col, moveNodes[j].direct);
             visited[moveNodes[j].row][moveNodes[j].col][moveNodes[j].direct] = true;
@@ -63,13 +66,41 @@ public class s2 {
     return count;
   }
 
-  private static boolean check(int[][] board, Node n) {
-    int nearR = n.direct == 0 ? n.row : n.row + 1;
-    int nearC = n.direct == 0 ? n.col + 1 : n.col;
-    if (n.row >= 0 && n.row < width && n.col >= 0 && n.col < width
+  private static boolean canTurn(Node now, Node moveNode, int[][] board) {
+    if (now.direct == moveNode.direct) {
+      return true;
+    }
+
+    if (now.row == moveNode.row && now.col == moveNode.col) {
+      if (board[now.row + 1][now.col + 1] == 1) {
+        return false;
+      }
+    } else if (now.row == moveNode.row) {
+      int checkCol = Math.min(now.col, moveNode.col);
+      if (board[now.row + 1][checkCol] == 1) {
+        return false;
+      }
+    } else if (now.col == moveNode.col) {
+      int checkRow = Math.min(now.row, moveNode.row);
+      if (board[checkRow][now.col + 1] == 1) {
+        return false;
+      }
+    } else {
+      int checkRow = Math.min(now.row, moveNode.row);
+      int checkCol = Math.min(now.col, moveNode.col);
+      if (board[checkRow][checkCol] == 1) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  private static boolean check(int[][] board, Node node) {
+    int nearR = node.direct == 0 ? node.row : node.row + 1;
+    int nearC = node.direct == 0 ? node.col + 1 : node.col;
+    if (node.row >= 0 && node.row < width && node.col >= 0 && node.col < width
         && nearR >= 0 && nearR < width && nearC >= 0 && nearC < width) {
-      //회전 시 1인지 아닌지 체크
-      if (board[n.row][n.col] == 0 && board[nearR][nearC] == 0) {
+      if (board[node.row][node.col] == 0 && board[nearR][nearC] == 0) {
         return true;
       }
     }
@@ -104,9 +135,5 @@ public class s2 {
       this.direct = direct; //0 : 가로, 1 : 세로
     }
 
-    @Override
-    protected Object clone() throws CloneNotSupportedException {
-      return super.clone();
-    }
   }
 }

@@ -6,189 +6,134 @@ import java.util.Queue;
 //블록 이동하기
 public class s60063 {
 
-  static private Integer result;
-  static private Integer HEIGHT;
+  private static int width;
 
   public static int solution(int[][] board) {
-    result = Integer.MAX_VALUE;
-    HEIGHT = board.length;
-
-    boolean[][][] visited = new boolean[HEIGHT][HEIGHT][2];
-    visited[0][0][0] = true;
-    dfs(0, 0, 0, 0, board, visited);
-    return result;
-  }
-
-  private static void bfs(int[][] board, boolean[][][] visited) {
+    width = board.length;
+    boolean[][][] visited = new boolean[width][width][2]; // //0 : 가로, 1 : 세로
     Queue<Node> queue = new ArrayDeque<>();
-
-    int[][] dir = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
-    int[] rotate = {-1, 1};
-
     queue.add(new Node(0, 0, 0));
+    visited[0][0][0] = true;
 
+    Node[] moveNodes = new Node[8];
+    for (int i = 0; i < 8; i++) {
+      moveNodes[i] = new Node(0, 0, 0);
+    }
+
+    int count = 0;
     while (!queue.isEmpty()) {
       int size = queue.size();
-      int depth = 0;
 
       for (int i = 0; i < size; i++) {
         Node now = queue.poll();
-
-        //종료 체크
-        if ((now.r == board.length - 2 && now.c == board.length - 1)
-            || now.r == board.length - 1 && now.c == board.length - 2) {
-          result = depth;
-          return;
+        if (isEnd(now)) {
+          return count;
         }
 
-        for (int d = 0; d < 4; d++) {
-          //회전 없이
-          int nr = now.r + dir[d][0];
-          int nc = now.c + dir[d][1];
-          int ndir = now.direct;
-
-          if (isPossibleVisit(board, visited, nr, nc, ndir)) {
-            Node addNode = new Node(nr, nc, ndir);
-          }
-        }
-
-        depth++;
-      }
-
-    }
-  }
-
-  private static void dfs(int row, int col, int direct, int depth, int[][] board,
-      boolean[][][] visited) {
-    if (depth > result) {
-      return;
-    }
-
-    if ((row == board.length - 2 && col == board.length - 1)
-        || row == board.length - 1 && col == board.length - 2) {
-      result = Math.min(result, depth);
-      return;
-    }
-
-    int[] dr = new int[]{1, -1, 0, 0};
-    int[] dc = new int[]{0, 0, 1, -1};
-
-    int[] tr = new int[]{-1, 1, -1, 1};
-    int[] tc = new int[]{0, 0, 1, 1};
-
-    for (int i = 0; i < 4; i++) {
-      //회전 없이
-      int cRow = row + dr[i];
-      int cCol = col + dc[i];
-      if (isPossibleVisit(board, visited, cRow, cCol, direct)) {
-        visited[cRow][cCol][direct] = true;
-        dfs(cRow, cCol, direct, depth + 1, board, visited);
-        visited[cRow][cCol][direct] = false;
-      }
-    }
-
-    for (int i = 0; i < 4; i++) {
-      int cr;
-      int cc;
-      if (direct == 0) {
-        cr = tr[i];
-        cc = tc[i];
-      } else {
-        cr = tc[i];
-        cc = tr[i];
-      }
-      //회전
-      if (isPossibleTurn(board, visited, row, col, cr, cc, direct)) {
-        int cRow, cCol;
-        if (direct == 0) {
-          if (cr == -1) {
-            cRow = row - 1;
-            cCol = cc == 0 ? col + 1 : col;
-          } else {
-            cRow = row;
-            cCol = cc == 0 ? col + 1 : col;
-          }
+        if (now.direct == 0) {
+          moveNodes[0].setInfo(now.row, now.col + 1, 0);
+          moveNodes[1].setInfo(now.row, now.col - 1, 0);
+          moveNodes[2].setInfo(now.row, now.col + 1, 1);
+          moveNodes[3].setInfo(now.row - 1, now.col + 1, 1);
+          moveNodes[4].setInfo(now.row, now.col, 1);
+          moveNodes[5].setInfo(now.row - 1, now.col, 1);
+          moveNodes[6].setInfo(now.row + 1, now.col, 0);//위
+          moveNodes[7].setInfo(now.row - 1, now.col, 0);//아래
         } else {
-          if (cc == -1) {
-            cRow = cr == 0 ? row + 1 : row;
-            cCol = col - 1;
-          } else {
-            cRow = cr == 0 ? row + 1 : row;
-            cCol = col;
-          }
+          moveNodes[0].setInfo(now.row + 1, now.col, 1);
+          moveNodes[1].setInfo(now.row - 1, now.col, 1);
+          moveNodes[2].setInfo(now.row + 1, now.col, 0);
+          moveNodes[3].setInfo(now.row, now.col, 0);
+          moveNodes[4].setInfo(now.row + 1, now.col - 1, 0);
+          moveNodes[5].setInfo(now.row, now.col - 1, 0);
+          moveNodes[6].setInfo(now.row, now.col + 1, 1);//좌
+          moveNodes[7].setInfo(now.row, now.col - 1, 1);//우
         }
 
-        visited[cRow][cCol][(direct + 1) % 2] = true;
-        dfs(cRow, cCol, (direct + 1) % 2, depth + 1, board, visited);
-        visited[cRow][cCol][(direct + 1) % 2] = false;
+        for (int j = 0; j < 8; j++) {
+          if (check(board, moveNodes[j]) && canTurn(now, moveNodes[j], board)
+              && !visited[moveNodes[j].row][moveNodes[j].col][moveNodes[j].direct]) {
+            Node move = new Node(moveNodes[j].row, moveNodes[j].col, moveNodes[j].direct);
+            visited[moveNodes[j].row][moveNodes[j].col][moveNodes[j].direct] = true;
+            queue.add(move);
+          }
+        }
       }
 
-
+      count++;
     }
 
+    return count;
   }
 
-  private static boolean isPossibleTurn(int[][] board, boolean[][][] visited, int row, int col,
-      int tr, int tc, int direct) {
-    if (row + tr >= 0 && row + tr < HEIGHT && col + tc >= 0 && col + tc < HEIGHT) {
-      if (board[row + tr][col + tc] == 1) {
+  private static boolean canTurn(Node now, Node moveNode, int[][] board) {
+    if (now.direct == moveNode.direct) {
+      return true;
+    }
+
+    if (now.row == moveNode.row && now.col == moveNode.col) {
+      if (board[now.row + 1][now.col + 1] == 1) {
         return false;
       }
-    }
-
-    int cRow, cCol;
-    if (direct == 0) {
-      if (tr == -1) {
-        cRow = row - 1;
-        cCol = tc == 0 ? col + 1 : col;
-      } else {
-        cRow = row;
-        cCol = tc == 0 ? col + 1 : col;
+    } else if (now.row == moveNode.row) {
+      int checkCol = Math.min(now.col, moveNode.col);
+      if (board[now.row + 1][checkCol] == 1) {
+        return false;
+      }
+    } else if (now.col == moveNode.col) {
+      int checkRow = Math.min(now.row, moveNode.row);
+      if (board[checkRow][now.col + 1] == 1) {
+        return false;
       }
     } else {
-      if (tc == -1) {
-        cRow = tr == 0 ? row + 1 : row;
-        cCol = col - 1;
-      } else {
-        cRow = tr == 0 ? row + 1 : row;
-        cCol = col;
+      int checkRow = Math.min(now.row, moveNode.row);
+      int checkCol = Math.min(now.col, moveNode.col);
+      if (board[checkRow][checkCol] == 1) {
+        return false;
       }
-    }
-
-    return isPossibleVisit(board, visited, cRow, cCol, (direct + 1) % 2);
-  }
-
-  private static boolean isPossibleVisit(int[][] board, boolean[][][] visited, int row, int col,
-      int direct) {
-    if (row < 0 || row >= HEIGHT || col < 0 || col >= HEIGHT || visited[row][col][direct]
-        || board[row][col] == 1) {
-      return false;
-    }
-    int anotherR;
-    int anotherC;
-    if (direct == 0) {
-      anotherR = row;
-      anotherC = col + 1;
-    } else {
-      anotherR = row + 1;
-      anotherC = col;
-    }
-    if (anotherR >= HEIGHT || anotherC >= HEIGHT || board[anotherR][anotherC] == 1) {
-      return false;
     }
     return true;
   }
 
+  private static boolean check(int[][] board, Node node) {
+    int nearR = node.direct == 0 ? node.row : node.row + 1;
+    int nearC = node.direct == 0 ? node.col + 1 : node.col;
+    if (node.row >= 0 && node.row < width && node.col >= 0 && node.col < width
+        && nearR >= 0 && nearR < width && nearC >= 0 && nearC < width) {
+      if (board[node.row][node.col] == 0 && board[nearR][nearC] == 0) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private static boolean isEnd(Node now) {
+    if (now.row == width - 2 && now.col == width - 1 && now.direct == 1) {
+      return true;
+    }
+    if (now.row == width - 1 && now.col == width - 2 && now.direct == 0) {
+      return true;
+    }
+    return false;
+  }
+
   private static class Node {
 
-    int r;
-    int c;
+    int row;
+    int col;
     int direct;
 
-    public Node(int r, int c, int direct) {
-      this.r = r;
-      this.c = c;
-      this.direct = direct;
+    public Node(int row, int col, int direct) {
+      this.row = row;
+      this.col = col;
+      this.direct = direct; //0 : 가로, 1 : 세로
     }
+
+    public void setInfo(int row, int col, int direct) {
+      this.row = row;
+      this.col = col;
+      this.direct = direct; //0 : 가로, 1 : 세로
+    }
+
   }
 }
