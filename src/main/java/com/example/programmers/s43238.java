@@ -1,9 +1,8 @@
-package com.example.Exam.skill_checks;
+package com.example.programmers;
 
 import java.util.Arrays;
 
-//입국심사
-public class s1 {
+public class s43238 {
 
   public static long solution(int n, int[] times) {
     Arrays.sort(times);
