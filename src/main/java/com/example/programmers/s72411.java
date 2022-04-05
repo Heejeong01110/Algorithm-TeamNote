@@ -8,6 +8,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+//메뉴리뉴얼
 public class s72411 {
 
   private static HashMap<String, Integer> count;
