@@ -5,12 +5,26 @@ public class BinaryTreeOrders {
   private static Node root; //초기 root는 null
 
   public static void main(String[] args) {
-    Node n4 = createNode(null, 4, null);
+    Node n10 = createNode(null, 10, null);
+    Node n11 = createNode(null, 11, null);
     Node n5 = createNode(null, 5, null);
+    Node n6 = createNode(null, 6, null);
+    Node n7 = createNode(null, 7, null);
+    Node n8 = createNode(null, 8, null);
+    Node n4 = createNode(n6, 4, n7);
+    Node n9 = createNode(n10, 9, n11);
     Node n2 = createNode(n4, 2, n5);
-    Node n3 = createNode(null, 3, null);
+    Node n3 = createNode(n8, 3, n9);
     Node n1 = createNode(n2, 1, n3);
 
+    /*
+     *         1
+     *    2         3
+     *  4   5     8    9
+     * 6 7      10 11
+     *
+     *
+     * */
     root = n1;
     inOrder(n1);
     System.out.println("");
