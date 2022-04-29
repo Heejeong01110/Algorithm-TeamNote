@@ -4,6 +4,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
+//다시 풀어보기
+//K번째 수
 public class q1300 {
 
   private static final int max = 1_000_000_000;
