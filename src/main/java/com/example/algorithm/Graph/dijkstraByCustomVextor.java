@@ -71,7 +71,47 @@ public class dijkstraByCustomVextor {
     return cost[end];
   }
 
-  static class CustomVextor {
+
+  //한번의 연산으로 임의의 정점 X에서부터의 최단거리 리스트 출력
+  private static int[] getListDijkstra(HashMap<Integer, ArrayList<CustomVextor>> nodes, int X) {
+    int[] cost = new int[nodes.size() + 1];
+    PriorityQueue<CustomVextor> minCostQueue = new PriorityQueue<>(
+        Comparator.comparingInt(o -> o.cost));
+
+    for (int i = 0; i < cost.length; i++) {
+      cost[i] = Integer.MAX_VALUE;
+    }
+
+    cost[X] = 0;
+    minCostQueue.add(new CustomVextor(X, 0));
+
+    while (!minCostQueue.isEmpty()) {
+      //1. 최소 비용의 노드 선택
+      CustomVextor currentVextor = minCostQueue.poll(); //기준점에서부터의 길이가 저장됨. 새로 생성하는 벡터
+      int currentIndex = currentVextor.index;
+
+      //모든 정점 방문 시 종료
+
+      if (cost[currentIndex] < currentVextor.cost) { //스킵
+        continue;
+      }
+
+      //2. 기준점 이웃 노드 중 최소값 구하기
+      for (int j = 0; j < nodes.get(currentIndex).size(); j++) {
+        CustomVextor connectVex = nodes.get(currentIndex).get(j); //커넥트 노드 선택
+
+        if (cost[connectVex.index] > currentVextor.cost + connectVex.cost) {
+          cost[connectVex.index] = currentVextor.cost + connectVex.cost;
+          // 갱신된 경우에만 큐에 넣는다.
+          minCostQueue.add(new CustomVextor(connectVex.index, cost[connectVex.index]));
+        }
+      }
+    }
+
+    return cost;
+  }
+
+  private static class CustomVextor {
 
     int index; //이어진 index
     int cost; //요금
