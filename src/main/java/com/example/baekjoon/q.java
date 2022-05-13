@@ -7,24 +7,24 @@ import java.util.StringTokenizer;
 
 public class q {
 
-  private int N;
-  private int M;
-  private int[] ary;
+  private static int N;
+  private static int M;
+  private static int[] ary;
 
-  public void main(String[] args) throws IOException {
+  public static void main(String[] args) throws IOException {
     run();
   }
 
-  public void run() throws IOException {
+  public static void run() throws IOException {
     inputData();
     output(Solution());
   }
 
-  private void output(int result) {
+  private static void output(int result) {
     System.out.print(result);
   }
 
-  private void inputData() throws IOException {
+  private static void inputData() throws IOException {
     BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
     StringTokenizer st = new StringTokenizer(br.readLine());
@@ -40,7 +40,7 @@ public class q {
     br.close();
   }
 
-  private int Solution() {
+  private static int Solution() {
     return 0;
   }
 
