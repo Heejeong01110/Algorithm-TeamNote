@@ -28,7 +28,8 @@ public class qTest {
     in = new ByteArrayInputStream(input.getBytes());
     System.setIn(in);
 
-    q13022.run();
+    q test = new q();
+    test.run();
 
     assertEquals(output,out.toString());
   }
