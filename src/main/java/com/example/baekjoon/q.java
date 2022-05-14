@@ -36,7 +36,7 @@ public class q {
     for (int i = 0; i < N; i++) {
       ary[i] = Integer.parseInt(st.nextToken());
     }
-    
+
     br.close();
   }
 
