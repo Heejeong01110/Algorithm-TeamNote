@@ -3,8 +3,7 @@ package com.example.baekjoon;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.PriorityQueue;
+import java.util.Arrays;
 import java.util.StringTokenizer;
 
 public class q13905 {
@@ -13,7 +12,10 @@ public class q13905 {
   private static int M;
   private static int Start;
   private static int End;
-  private static ArrayList<Node>[] nodes;
+
+  //kruskal
+  private static int parents[];
+  private static Edge[] edgeList;
 
   public static void main(String[] args) throws IOException {
     run();
@@ -39,10 +41,8 @@ public class q13905 {
     Start = Integer.parseInt(st.nextToken());
     End = Integer.parseInt(st.nextToken());
 
-    nodes = new ArrayList[N + 1];
-    for (int i = 1; i <= N; i++) {
-      nodes[i] = new ArrayList<Node>();
-    }
+    edgeList = new Edge[M];
+    parents = new int[N + 1];
 
     for (int i = 0; i < M; i++) {
       st = new StringTokenizer(br.readLine());
@@ -50,51 +50,68 @@ public class q13905 {
       int two = Integer.parseInt(st.nextToken());
       int cost = Integer.parseInt(st.nextToken());
 
-      nodes[one].add(new Node(two, cost));
-      nodes[two].add(new Node(one, cost));
+      edgeList[i] = new Edge(one, two, cost);
     }
 
     br.close();
   }
 
   private static int Solution() {
-    int answer = 0;
-
-    PriorityQueue<Node> queue = new PriorityQueue<>((o1, o2) -> o2.cost - o1.cost);
-    boolean[] visited = new boolean[N + 1];
-    int[] minScore = new int[N + 1];
-    minScore[Start] = Integer.MAX_VALUE;
-
-    ArrayList<Integer> nodeList = new ArrayList<>();
-    nodeList.add(Start);
-    queue.add(new Node(Start, 0));
-
-    while (!queue.isEmpty()) {
-      Node now = queue.poll();
-      if (visited[now.index]) {
-        continue;
-      }
-
-      visited[now.index] = true;
-
-      for (int i = 0; i < nodes[now.index].size(); i++) {
-        Node next = nodes[now.index].get(i);
-        minScore[next.index] = Math.max(minScore[next.index],
-            Math.min(minScore[now.index], next.cost));
-        queue.add(next);
-      }
-    }
-    answer = minScore[End];
+    int answer = kruskal();
     return answer;
   }
 
-  private static class Node {
+  private static int kruskal() {
+    int minCost = 0;
 
-    int index;
+    Arrays.sort(edgeList, ((o1, o2) -> o2.cost - o1.cost));
+
+    // 정점 초기화
+    for (int i = 1; i <= N; i++) {
+      parents[i] = i;
+    }
+
+    // 주어진 간선을 이어보면서
+    for (Edge edge : edgeList) {
+      if (union(edge.start, edge.end)) {// 부모가 다를 경우
+        minCost = edge.cost;
+
+        if (find(Start) == find(End)) { //모두 이어져 있을 경우 종료
+          return minCost;
+        }
+      }
+    }
+
+    return 0;
+  }
+
+  private static boolean union(int a, int b) {
+    int aRoot = find(a);
+    int bRoot = find(b);
+
+    if (aRoot == bRoot) {
+      return false;
+    }
+    parents[aRoot] = bRoot;
+    return true;
+  }
+
+  private static int find(int a) {
+    if (a == parents[a]) {
+      return a;
+    }
+    return parents[a] = find(parents[a]);
+  }
+
+  private static class Edge {
+
+    int start;
+    int end;
     int cost;
 
-    public Node(int index, int cost) {
-      this.index = index;
+    public Edge(int start, int end, int cost) {
+      this.start = start;
+      this.end = end;
       this.cost = cost;
     }
   }
