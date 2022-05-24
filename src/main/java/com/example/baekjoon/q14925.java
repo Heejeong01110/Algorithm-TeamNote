@@ -45,6 +45,24 @@ public class q14925 {
   private static int Solution() {
 
     int[][] dp = new int[M + 1][N + 1];
+    int answer = 0;
+
+    for (int i = 1; i <= M; i++) {
+      for (int j = 1; j <= N; j++) {
+        if (map[i][j] != 0) {
+          continue;
+        }
+
+        dp[i][j] = Math.min(dp[i - 1][j - 1], Math.min(dp[i][j - 1], dp[i - 1][j])) + 1;
+        answer = Math.max(answer, dp[i][j]);
+      }
+    }
+
+    return answer;
+  }
+
+  private static int sum() {
+    int[][] dp = new int[M + 1][N + 1];
     dp[1][1] = map[1][1] == 0 ? 1 : 0;
 
     for (int i = 2; i <= M; i++) {
