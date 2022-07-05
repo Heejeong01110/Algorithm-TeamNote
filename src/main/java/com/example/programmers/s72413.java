@@ -2,84 +2,68 @@ package com.example.programmers;
 
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.PriorityQueue;
 
 //합승 택시 요금
 public class s72413 {
 
-  private static HashMap<Integer, ArrayList<CustomVextor>> nodes; //key : 인덱스값, value : 이웃한 인덱스
+  private static ArrayList<Node>[] nodes;
 
   public static int solution(int n, int s, int a, int b, int[][] fares) {
-    //n : 지점의 수 1 ~ n
-    //s : 출발지점
-    //a : 도착지점
-    //fares : 지점 사이의 예상 택시요금
-    nodes = new HashMap<>();
+    nodes = new ArrayList[n + 1];
     for (int i = 1; i <= n; i++) {
-      nodes.put(i, new ArrayList<>());
+      nodes[i] = new ArrayList<>();
     }
 
-    for (int[] fare : fares) {
-      nodes.get(fare[0]).add(new CustomVextor(fare[1], fare[2]));
-      nodes.get(fare[1]).add(new CustomVextor(fare[0], fare[2]));
+    for (int i = 0; i < fares.length; i++) {
+      nodes[fares[i][0]].add(new Node(fares[i][1], fares[i][2]));
+      nodes[fares[i][1]].add(new Node(fares[i][0], fares[i][2]));
     }
 
-    int[] startDijk = createDijkstraList(s);
-    int[] aDijk = createDijkstraList(a);
-    int[] bDijk = createDijkstraList(b);
+    int[] aCosts = dijkstra(a);
+    int[] bCosts = dijkstra(b);
+    int[] sCosts = dijkstra(s);
 
-    Integer answer = Integer.MAX_VALUE;
-    for (int i = 1; i <= n; i++) {
-      int totalCost = startDijk[i] + aDijk[i] + bDijk[i];
-      answer = Math.min(answer, totalCost);
+    int result = Integer.MAX_VALUE;
+    for (int mid = 1; mid <= n; mid++) {
+      result = Math.min(result, sCosts[mid] + aCosts[mid] + bCosts[mid]);
     }
 
-    return answer;
+    return result;
   }
 
-  static int[] createDijkstraList(int start) {
-    int[] cost = new int[nodes.size() + 1];
-    PriorityQueue<CustomVextor> minCostQueue = new PriorityQueue<>(
-        Comparator.comparingInt(o -> o.cost));
-
-    for (int i = 0; i < cost.length; i++) {
-      cost[i] = Integer.MAX_VALUE;
+  private static int[] dijkstra(int start) {
+    int[] costs = new int[nodes.length];
+    for (int i = 0; i < costs.length; i++) {
+      costs[i] = Integer.MAX_VALUE;
     }
 
-    cost[start] = 0;
-    minCostQueue.add(new CustomVextor(start, 0));
+    PriorityQueue<Node> queue = new PriorityQueue<>(Comparator.comparingInt(o -> o.cost));
+    queue.add(new Node(start, 0));
+    costs[start] = 0;
 
-    while (!minCostQueue.isEmpty()) {
-      //1. 최소 비용의 노드 선택
-      CustomVextor currentVextor = minCostQueue.poll(); //기준점에서부터의 길이가 저장됨. 새로 생성하는 벡터
-      int currentIndex = currentVextor.index;
+    while (!queue.isEmpty()) {
+      Node now = queue.poll();
 
-      if (cost[currentIndex] < currentVextor.cost) { //스킵
-        continue;
-      }
+      for (int i = 0; i < nodes[now.index].size(); i++) {
+        Node next = nodes[now.index].get(i);
 
-      //2. 기준점 이웃 노드 cost 갱신
-      for (int j = 0; j < nodes.get(currentIndex).size(); j++) {
-        CustomVextor connectVex = nodes.get(currentIndex).get(j); //커넥트 노드 선택
-
-        if (cost[connectVex.index] > currentVextor.cost + connectVex.cost) {
-          cost[connectVex.index] = currentVextor.cost + connectVex.cost;
-          // 갱신된 경우에만 큐에 넣는다.
-          minCostQueue.offer(new CustomVextor(connectVex.index, cost[connectVex.index]));
+        if (costs[next.index] > now.cost + next.cost) {
+          costs[next.index] = now.cost + next.cost;
+          queue.add(new Node(next.index, now.cost + next.cost));
         }
       }
     }
 
-    return cost;
+    return costs;
   }
 
-  static class CustomVextor {
+  private static class Node {
 
-    int index; //이어진 index
-    int cost; //요금
+    int index;
+    int cost;
 
-    public CustomVextor(int index, int cost) {
+    public Node(int index, int cost) {
       this.index = index;
       this.cost = cost;
     }
