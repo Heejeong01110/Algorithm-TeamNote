@@ -74,11 +74,7 @@ public class q1504 {
       result += v1[1] + v2[N];
     }
 
-    int min = v1[layover[1]];
-    for (int i = 1; i <= N; i++) {
-      min = Math.min(v1[i] + v2[i], min);
-    }
-    result += min;
+    result += v1[layover[1]];
     return result;
   }
 
