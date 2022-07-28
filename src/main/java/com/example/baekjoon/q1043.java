@@ -8,6 +8,7 @@ import java.util.StringTokenizer;
 
 public class q1043 {
 
+  public static int[] parent;
   private static int N;
   private static int M;
   private static ArrayList<Integer>[] partyList;
@@ -70,10 +71,38 @@ public class q1043 {
       return M;
     }
 
-    result = new boolean[M];
+    parent = new int[N + 1];
     for (int i = 1; i <= N; i++) {
-      if (truth.contains(i)) { //진실을 알고있는 사람일 경우
-        checkTruthByPerson(i); //참여한 파티 모두 진실 말하도록 체크
+      parent[i] = i;
+    }
+
+    for (int i = 0; i < M; i++) {
+      if (partyList[i].size() <= 1) {
+        continue;
+      }
+
+      int temp = partyList[i].get(0);
+      for (int j = 1; j < partyList[i].size(); j++) {
+        union(temp, partyList[i].get(j));
+      }
+    }
+
+    for (int i = 0; i < truth.size(); i++) {
+
+      for (int j = 1; j <= N; j++) {
+        if (j != truth.get(i) && isSameParent(j, truth.get(i)) && !truth.contains(j)) {
+          truth.add(j);
+        }
+      }
+    }
+
+    boolean[] result = new boolean[M];
+    for (int i = 0; i < M; i++) {
+      for (int j = 0; j < truth.size(); j++) {
+        if (partyList[i].contains(truth.get(j))) {
+          result[i] = true;
+          break;
+        }
       }
     }
 
@@ -83,8 +112,34 @@ public class q1043 {
         res++;
       }
     }
-
     return M - res;
+  }
+
+  private static int find(int x) {
+    if (x == parent[x]) {
+      return x;
+    } else {
+      return parent[x] = find(parent[x]);
+    }
+  }
+
+  private static void union(int x, int y) {
+    x = find(x);
+    y = find(y); // 같은 부모를 가지고 있지 않을 때
+    if (x != y) { // y가 x 보다 크다는 것을 가정한다면 아래와 같이 표현
+      parent[y] = x;
+    }
+  }
+
+  // 같은 부모 노드를 가지는지 확인
+  private static boolean isSameParent(int x, int y) {
+    x = find(x);
+    y = find(y);
+    if (x == y) {
+      return true;
+    } else {
+      return false;
+    }
   }
 
   private static void checkTruthByPerson(int person) {
