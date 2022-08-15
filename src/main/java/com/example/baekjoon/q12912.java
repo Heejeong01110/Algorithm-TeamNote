@@ -4,9 +4,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.PriorityQueue;
 import java.util.StringTokenizer;
 
 public class q12912 {
@@ -14,6 +11,8 @@ public class q12912 {
   private static int N;
   private static ArrayList<Node>[] nodes;
   private static Edge[] edges;
+  private static int dfsLen;
+  private static int dfsNode;
 
   public static void main(String[] args) throws IOException {
     run();
@@ -71,59 +70,36 @@ public class q12912 {
   }
 
   private static int getDiameter(int start, int exclude) {
-    int[] getFarNode = dijkstra(start, edges[exclude]);
-    int max = Integer.MIN_VALUE;
-    int maxIdx = 0;
-    for (int i = 0; i < getFarNode.length; i++) {
-      if (getFarNode[i] != Integer.MAX_VALUE && max < getFarNode[i]) {
-        max = getFarNode[i];
-        maxIdx = i;
-      }
-    }
+    dfsLen = -1;
+    dfsNode = start;
+    dfs(start, edges[exclude], 0, new boolean[N + 1]);
 
-    int[] diameter = dijkstra(maxIdx, edges[exclude]);
-    max = Integer.MIN_VALUE;
-    for (int i = 0; i < diameter.length; i++) {
-      if (diameter[i] != Integer.MAX_VALUE && diameter[i] > max) {
-        max = diameter[i];
-      }
-    }
-    return max;
+    dfsLen = -1;
+    dfs(dfsNode, edges[exclude], 0, new boolean[N + 1]);
+
+    return dfsLen;
   }
 
-  private static int[] dijkstra(int start, Edge exclude) {
-    int[] costs = new int[N];
-    PriorityQueue<Node> queue = new PriorityQueue<>(Comparator.comparingInt(o -> o.cost));
-
-    Arrays.fill(costs, Integer.MAX_VALUE);
-
-    costs[start] = 0;
-    queue.add(new Node(start, 0));
-
-    while (!queue.isEmpty()) {
-      Node now = queue.poll();
-
-      if (costs[now.index] < now.cost) {
-        continue;
-      }
-
-      for (int i = 0; i < nodes[now.index].size(); i++) {
-        Node next = nodes[now.index].get(i);
-
-        if (exclude.cost == next.cost &&
-            (exclude.start == now.index && exclude.end == next.index
-                || exclude.end == now.index && exclude.start == next.index)) {
-          continue;
-        }
-
-        if (costs[next.index] > now.cost + next.cost) {
-          costs[next.index] = now.cost + next.cost;
-          queue.add(new Node(next.index, costs[next.index]));
-        }
-      }
+  private static void dfs(int now, Edge exclude, int len, boolean[] visited) {
+    if (visited[now]) {
+      return;
     }
 
-    return costs;
+    visited[now] = true;
+    if (dfsLen < len) {
+      dfsLen = len;
+      dfsNode = now;
+    }
+    for (int i = 0; i < nodes[now].size(); i++) {
+      Node next = nodes[now].get(i);
+
+      if (exclude.cost == next.cost &&
+          (exclude.start == now && exclude.end == next.index
+              || exclude.end == now && exclude.start == next.index)) {
+        continue;
+      }
+      dfs(next.index, exclude, len + next.cost, visited);
+    }
   }
 
   private static class Edge {
