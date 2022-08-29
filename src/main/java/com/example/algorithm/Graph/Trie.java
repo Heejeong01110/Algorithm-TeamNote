@@ -23,6 +23,17 @@ public class Trie {
     System.out.println(search("rid"));
     System.out.println(search("stress"));
 
+    Trie2 trie2 = new Trie2();
+    trie2.insert("structure");
+    trie2.insert("structures");
+    trie2.insert("ride");
+    trie2.insert("riders");
+    trie2.insert("stress");
+    trie2.insert("solstice");
+    trie2.insert("ridiculous");
+
+    System.out.println(trie2.find("rid", 0));
+    System.out.println(trie2.find("stress", 0));
   }
 
   // Trie에 문자열 저장
@@ -30,7 +41,7 @@ public class Trie {
     Node node = rootNode; // Trie자료구조는 항상 rootNode부터 시작
 
     for (int i = 0; i < str.length(); i++) {// 문자열의 각 단어마다 가져와서 자식노드 중에 있는지 체크
-      node = node.chiledNode.computeIfAbsent(str.charAt(i),
+      node = node.childNode.computeIfAbsent(str.charAt(i),
           key -> new Node(new HashMap<>(), false));// 없으면 자식노드 새로 생성
     }
 
@@ -42,7 +53,7 @@ public class Trie {
     Node node = rootNode; // Trie자료구조는 항상 rootNode부터 시작
 
     for (int i = 0; i < str.length(); i++) {// 문자열의 각 단어마다 노드가 존재하는지 체크
-      node = node.chiledNode.getOrDefault(str.charAt(i), null);
+      node = node.childNode.getOrDefault(str.charAt(i), null);
 
       if (node == null) {// node가 null이면 현재 Trie에 해당 문자열은 없음
         return false;
@@ -55,12 +66,49 @@ public class Trie {
 
   private static class Node {
 
-    Map<Character, Node> chiledNode;
+    Map<Character, Node> childNode;
     boolean endOfword;
 
-    public Node(Map<Character, Node> chiledNode, boolean endOfword) {
-      this.chiledNode = chiledNode;
+    public Node(Map<Character, Node> childNode, boolean endOfword) {
+      this.childNode = childNode;
       this.endOfword = endOfword;
+    }
+  }
+
+
+  private static class Trie2 {
+
+    Map<Integer, Integer> lenMap = new HashMap<>();
+    Trie2[] child = new Trie2[26];//알파벳 갯수만큼 초기화
+
+    void insert(String str) {
+      Trie2 node = this;
+      int len = str.length();
+
+      lenMap.put(len, lenMap.getOrDefault(len, 0) + 1);
+
+      for (int i = 0; i < len; i++) {
+        char ch = str.charAt(i);
+        int idx = ch - 'a';
+        if (node.child[idx] == null) {
+          node.child[idx] = new Trie2();
+        }
+
+        node = node.child[idx];
+        node.lenMap.put(len, node.lenMap.getOrDefault(len, 0) + 1);
+      }
+    }
+
+    int find(String str, int strIdx) { //찾는 문자열 갯수 출력
+
+      int idx = str.charAt(strIdx) - 'a';
+      if (strIdx == str.length() - 1) {
+        return lenMap.get(idx);
+      }
+      if (child[idx] == null) {
+        return 0;
+      }
+      return child[idx].find(str, strIdx + 1);
     }
   }
 }
