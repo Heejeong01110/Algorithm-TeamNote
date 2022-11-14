@@ -1,6 +1,7 @@
 package com.example.algorithm.sortAndSearch.sort;
 
 import java.util.Arrays;
+import java.util.Collections;
 
 public class IntegerListSort {
 
@@ -11,6 +12,11 @@ public class IntegerListSort {
     for (int j : array) {
       System.out.println(j);
     }
+
+    //primitive 로는 변형이 안됨
+    int[] reverseAry =
+        Arrays.stream(array).boxed().sorted(Collections.reverseOrder())
+            .mapToInt(Integer::intValue).toArray();
 
     int[][] map = {{1, 2}, {1, 4}, {5, 1}, {6, 4}, {3, 2}, {7, 10}, {10, 10}};
 
