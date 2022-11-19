@@ -7,115 +7,115 @@ import java.util.Queue;
 public class s84021 {
 
   private static final int[][] direct = new int[][]{{0, 1}, {0, -1}, {-1, 0}, {1, 0}};
+  private static boolean[][] visitedBoard;
+  private static boolean[][] visitedTable;
+  private static int length;
 
   public static int solution(int[][] game_board, int[][] table) {
-    int answer = -1;
 
-    boolean[][] visitedBoard = new boolean[game_board.length][game_board[0].length];
-    boolean[][] visitedTable = new boolean[table.length][table[0].length];
+    length = game_board.length;
+    visitedBoard = new boolean[length][length];
+    visitedTable = new boolean[length][length];
 
-    ArrayList<ArrayList<int[]>> boardList = new ArrayList<>();
-    ArrayList<ArrayList<int[]>> tableList = new ArrayList<>();
+    for (int i = 0; i < length; i++) {
+      for (int j = 0; j < length; j++) {
+        visitedBoard[i][j] = game_board[i][j] == 0; //블럭이 true, 배경이 false
+        visitedTable[i][j] = table[i][j] == 1; //블럭이 true, 배경이 false
+      }
+    }
 
-    for (int i = 0; i < game_board.length; i++) {
-      for (int j = 0; j < game_board[0].length; j++) {
-        if (game_board[i][j] == 0 && !visitedBoard[i][j]) {
-          bfs(i, j, visitedBoard, game_board, 0, boardList);
+    ArrayList<boolean[][]> insertBlocks = new ArrayList<>();
+    ArrayList<boolean[][]> blankBlocks = new ArrayList<>();
+
+    for (int i = 0; i < length; i++) {
+      for (int j = 0; j < length; j++) {
+        if (visitedBoard[i][j]) {
+          blankBlocks.add(createBlock(visitedBoard, i, j));
         }
-
-        if (table[i][j] == 1 && !visitedTable[i][j]) {
-          bfs(i, j, visitedTable, table, 1, tableList);
+        if (visitedTable[i][j]) {
+          insertBlocks.add(createBlock(visitedTable, i, j));
         }
       }
     }
 
-    answer = findBlock(boardList, tableList);
+    int answer = 0;
+    for (boolean[][] insertBlock : insertBlocks) {
+      for (boolean[][] blankBlock : blankBlocks) {
+        if (isCorrectBlock(insertBlock, blankBlock)) {
+          answer += countItems(insertBlock);
+          blankBlocks.remove(blankBlock);
+          break;
+        }
+      }
+    }
 
     return answer;
   }
 
-  private static int findBlock(ArrayList<ArrayList<int[]>> boards,
-      ArrayList<ArrayList<int[]>> tables) {
-    int size = 0;
-    int tableSize = tables.size();
-    int boardSize = boards.size();
-
-    boolean[] visited = new boolean[boardSize];
-
-    for (int i = 0; i < tableSize; i++) {
-      ArrayList<int[]> table = tables.get(i);
-
-      for (int j = 0; j < boardSize; j++) {
-        ArrayList<int[]> board = boards.get(j);
-
-        if (table.size() == board.size() && !visited[j]) {
-          if (isRotate(table, board)) {
-            size += table.size();
-            visited[j] = true;
-            break;
-          }
-        }
+  private static int countItems(boolean[][] block) {
+    int count = 0;
+    for (int i = 0; i < block.length; i++) {
+      for (int j = 0; j < block[0].length; j++) {
+        count += block[i][j] ? 1 : 0;
       }
     }
-    return size;
+    return count;
   }
 
-  private static boolean isRotate(ArrayList<int[]> table, ArrayList<int[]> board) {
-    boolean result = false;
-
-    board.sort((o1, o2) -> {
-      if (o1[0] == o2[0]) {
-        return o1[1] - o2[1];
-      }
-      return o1[0] - o2[0];
-    });
-
-    for (int i = 0; i < 4; i++) {
-      table.sort((o1, o2) -> {
-        if (o1[0] == o2[0]) {
-          return o1[1] - o2[1];
-        }
-        return o1[0] - o2[0];
-      });
-
-      int pr = table.get(0)[0];
-      int pc = table.get(0)[1];
-
-      for (int j = 0; j < table.size(); j++) {
-        table.get(j)[0] -= pr;
-        table.get(j)[1] -= pc;
+  private static boolean isCorrectBlock(boolean[][] insertBlock, boolean[][] blankBlock) {
+    //1. 비교
+    for (int d = 0; d < 4; d++) {
+      if (isSameBlock(insertBlock, blankBlock)) {
+        return true;
       }
 
-      boolean isCollectPoint = true;
-      for (int j = 0; j < board.size(); j++) {
-        if (board.get(j)[0] != table.get(j)[0] || board.get(j)[1] != table.get(j)[1]) {
-          isCollectPoint = false;
-          break;
-        }
-      }
+      //2. 회전
+      insertBlock = turnRight(insertBlock);
+    }
+    return false;
+  }
 
-      if (isCollectPoint) {
-        result = true;
-        break;
-      } else {//90도 회전 : x,y -> y, -x
-        for (int j = 0; j < table.size(); j++) {
-          int temp = table.get(j)[0];
-          table.get(j)[0] = table.get(1)[1];
-          table.get(j)[1] = -temp;
-        }
+  private static boolean[][] turnRight(boolean[][] block) {
+    int maxRow = block.length - 1;
+    int maxCol = block[0].length - 1;
+
+    boolean[][] result = new boolean[block[0].length][block.length];
+
+    for (int i = 0; i <= maxRow; i++) {
+      for (int j = 0; j <= maxCol; j++) {
+        result[j][maxRow - i] = block[i][j];
       }
     }
+
     return result;
   }
 
-  private static void bfs(int row, int col, boolean[][] visited, int[][] board, int check,
-      ArrayList<ArrayList<int[]>> boardList) {
+  private static boolean isSameBlock(boolean[][] insertBlock, boolean[][] blankBlock) {
+    if (insertBlock.length != blankBlock.length
+        || insertBlock[0].length != blankBlock[0].length) {
+      return false;
+    }
+
+    for (int i = 0; i < insertBlock.length; i++) {
+      for (int j = 0; j < insertBlock[0].length; j++) {
+        if (insertBlock[i][j] != blankBlock[i][j]) {
+          return false;
+        }
+      }
+    }
+
+    return true;
+  }
+
+  private static boolean[][] createBlock(boolean[][] table, int row, int col) {
+    ArrayList<int[]> nodes = new ArrayList<>();
     Queue<int[]> queue = new ArrayDeque<>();
-    ArrayList<int[]> subList = new ArrayList<>();
+    boolean[][] visited = new boolean[length][length];
+    int maxRow = row, minRow = row, maxCol = col, minCol = col;
 
     visited[row][col] = true;
     queue.add(new int[]{row, col});
-    subList.add(new int[]{row - row, col - col});
+    nodes.add(new int[]{row, col});
 
     while (!queue.isEmpty()) {
       int[] now = queue.poll();
@@ -124,22 +124,30 @@ public class s84021 {
         int nr = now[0] + direct[i][0];
         int nc = now[1] + direct[i][1];
 
-        if (isPossible(nr, nc, board.length, board[0].length)
-            && !visited[nr][nc]
-            && board[nr][nc] == check) {
+        if (isPossible(nr, nc) && !visited[nr][nc] && table[nr][nc]) {
+          maxRow = Math.max(maxRow, nr);
+          minRow = Math.min(minRow, nr);
+          maxCol = Math.max(maxCol, nc);
+          minCol = Math.min(minCol, nc);
 
-          visited[nr][nc] = true;
           queue.add(new int[]{nr, nc});
-          subList.add(new int[]{nr - row, nc - col});
+          visited[nr][nc] = true;
+          nodes.add(new int[]{nr, nc});
         }
       }
     }
 
-    boardList.add(subList);
+    boolean[][] result = new boolean[maxRow - minRow + 1][maxCol - minCol + 1];
+    for (int[] node : nodes) {
+      result[node[0] - minRow][node[1] - minCol] = true;
+      table[node[0]][node[1]] = false;
+    }
+
+    return result;
   }
 
-  private static boolean isPossible(int nx, int ny, int N, int M) {
-    return nx >= 0 && nx < N && ny >= 0 && ny < M;
+  private static boolean isPossible(int nx, int ny) {
+    return nx >= 0 && nx < length && ny >= 0 && ny < length;
   }
 
 }
