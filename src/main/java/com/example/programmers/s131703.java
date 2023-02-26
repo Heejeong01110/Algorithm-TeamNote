@@ -2,64 +2,119 @@ package com.example.programmers;
 
 public class s131703 {
 
-  private static int answer;
+  private static int ROW_LEN;
+  private static int COL_LEN;
+  private static int[][] table;
 
   public static int solution(int[][] beginning, int[][] target) {
-    answer = 11;
-    int row = beginning.length;
-    int col = beginning[0].length;
-    int[][] map = new int[row][col];
-    for (int i = 0; i < row; i++) {
-      for (int j = 0; j < col; j++) {
-        map[i][j] = beginning[i][j] == target[i][j] ? 0 : 1;
+    int answer = Integer.MAX_VALUE;
+    ROW_LEN = beginning.length;
+    COL_LEN = beginning[0].length;
+
+    int[] result = new int[4];
+    result[0] = rowFirst(beginning, target);
+    result[1] = colFirst(beginning, target);
+    result[2] = rowDFirst(beginning, target);
+    result[3] = colDFirst(beginning, target);
+
+    for (int i = 0; i < 4; i++) {
+      if (result[i] != -1) {
+        answer = Math.min(answer, result[i]);
       }
     }
-
-    int one = changeWhite(map, 0);
-    int two = changeWhite(map, 1);
-
-    if (one == -1 && two == -1) {
+    if(answer == Integer.MAX_VALUE){
       return -1;
-    } else if (one == -1) {
-      return two;
-    } else if (two == -1) {
-      return one;
     }
-
-    return Math.min(one, two);
+    return answer;
   }
 
-  private static int changeWhite(int[][] map, int color) {
+  private static int rowFirst(int[][] beginning, int[][] target) {
     int answer = 0;
-    int row = map.length;
-    int col = map[0].length;
-
-    int[][] clone = new int[row][col];
-    for (int i = 0; i < row; i++) {
-      clone[i] = map[i].clone();
+    table = new int[ROW_LEN][COL_LEN];
+    for (int i = 0; i < ROW_LEN; i++) {
+      table[i] = beginning[i].clone();
     }
 
-    for (int i = 0; i < col; i++) {
-      if (clone[0][i] != color) {
+    for (int i = 0; i < ROW_LEN; i++) {
+      if (table[i][0] != target[i][0]) {
+        convertRow(i);
         answer++;
-        for (int j = 0; j < row; j++) {
-          clone[j][i] = (clone[j][i] + 1) % 2;
-        }
       }
     }
 
-    for (int i = 0; i < row; i++) {
-      if (clone[i][0] != color) {
+    for (int i = 0; i < COL_LEN; i++) {
+      if (table[0][i] != target[0][i]) {
+        convertCol(i);
         answer++;
-        for (int j = 0; j < col; j++) {
-          clone[i][j] = (clone[i][j] + 1) % 2;
-        }
       }
     }
 
-    for (int i = 0; i < row; i++) {
-      for (int j = 0; j < col; j++) {
-        if (clone[i][j] != color) {
+    for (int i = 0; i < ROW_LEN; i++) {
+      for (int j = 0; j < COL_LEN; j++) {
+        if (table[i][j] != target[i][j]) {
+          return -1;
+        }
+      }
+    }
+    return answer;
+  }
+
+
+  private static int rowDFirst(int[][] beginning, int[][] target) {
+    int answer = 0;
+    table = new int[ROW_LEN][COL_LEN];
+    for (int i = 0; i < ROW_LEN; i++) {
+      table[i] = beginning[i].clone();
+    }
+
+    for (int i = 0; i < ROW_LEN; i++) {
+      if (table[i][0] == target[i][0]) {
+        convertRow(i);
+        answer++;
+      }
+    }
+
+    for (int i = 0; i < COL_LEN; i++) {
+      if (table[0][i] != target[0][i]) {
+        convertCol(i);
+        answer++;
+      }
+    }
+
+    for (int i = 0; i < ROW_LEN; i++) {
+      for (int j = 0; j < COL_LEN; j++) {
+        if (table[i][j] != target[i][j]) {
+          return -1;
+        }
+      }
+    }
+    return answer;
+  }
+
+  private static int colFirst(int[][] beginning, int[][] target) {
+    int answer = 0;
+    table = new int[ROW_LEN][COL_LEN];
+    for (int i = 0; i < ROW_LEN; i++) {
+      table[i] = beginning[i].clone();
+    }
+
+    for (int i = 0; i < COL_LEN; i++) {
+      if (table[0][i] != target[0][i]) {
+        convertCol(i);
+        answer++;
+      }
+    }
+
+    for (int i = 0; i < ROW_LEN; i++) {
+      if (table[i][0] != target[i][0]) {
+        convertRow(i);
+        answer++;
+      }
+    }
+
+    for (int i = 0; i < ROW_LEN; i++) {
+      for (int j = 0; j < COL_LEN; j++) {
+        if (table[i][j] != target[i][j]) {
           return -1;
         }
       }
@@ -68,49 +123,48 @@ public class s131703 {
     return answer;
   }
 
-  int compare_colunm(int c, int[][] beginning, int[][] target, int n) {
-    int cnt = 0;
-    for (int i = 0; i < n; i++) {
-      if (beginning[i][c] == target[i][c]) {
-        cnt++;
+
+  private static int colDFirst(int[][] beginning, int[][] target) {
+    int answer = 0;
+    table = new int[ROW_LEN][COL_LEN];
+    for (int i = 0; i < ROW_LEN; i++) {
+      table[i] = beginning[i].clone();
+    }
+
+    for (int i = 0; i < COL_LEN; i++) {
+      if (table[0][i] == target[0][i]) {
+        convertCol(i);
+        answer++;
       }
     }
 
-    if (cnt == 0) {
-      return 1; //1) 해당 열(=c)에서 beginning과 target 전부 반대인 경우
-    } else if (cnt == n) {
-      return 0; //2) 해당 열(=c)에서 beginning과 target 전부 동일한 경우
+    for (int i = 0; i < ROW_LEN; i++) {
+      if (table[i][0] != target[i][0]) {
+        convertRow(i);
+        answer++;
+      }
     }
-    return -1; //3) 1), 2)가 아닌 경우
+
+    for (int i = 0; i < ROW_LEN; i++) {
+      for (int j = 0; j < COL_LEN; j++) {
+        if (table[i][j] != target[i][j]) {
+          return -1;
+        }
+      }
+    }
+
+    return answer;
   }
 
-  private void dfs(int r, int c, int cnt, int n, int m, int[][] beginning, int[][] target) {
-    //모든 행에서 뒤집거나 뒤집지 않는 선택을 완료한 경우
-    if (r == n) {
-      boolean flag = true;
-      //열의 상태를 비교하여 TARGET과 동일하게 만들 수 있는지 판별
-      for (int j = 0; j < m; j++) {
-        int ret = compare_colunm(j, beginning, target, n);
-        if (ret == -1) {
-          flag = false;
-          continue;
-        } //현재 상태에서 TARGET과 동일하게 만들 수 없음 -> flag = 0;
-        cnt += ret; //해당 열이 전부 반대인 경우 1이 반환되어 뒤집기 횟수가 1증가
-      }
-      if (flag) {
-        answer = Math.min(answer, cnt); //TARGET과 동일하게 만들 수 있는 경우 최소 뒤집기 횟수 갱신
-      }
-    } else {
-      dfs(r + 1, c, cnt, n, m, beginning, target); //해당 행 뒤집기 X
-      flip_row(r, beginning, m);
-      dfs(r + 1, c, cnt + 1, n, m, beginning, target); //해당 행 뒤집기
-      flip_row(r, beginning, m);
+  private static void convertCol(int col) {
+    for (int i = 0; i < ROW_LEN; i++) {
+      table[i][col] = (table[i][col] + 1) % 2;
     }
   }
 
-  public void flip_row(int r, int[][] beginning, int m) {
-    for (int j = 0; j < m; j++) {
-      beginning[r][j] = (beginning[r][j] + 1) % 2;
+  private static void convertRow(int row) {
+    for (int i = 0; i < COL_LEN; i++) {
+      table[row][i] = (table[row][i] + 1) % 2;
     }
   }
 
