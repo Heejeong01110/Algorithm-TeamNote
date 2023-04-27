@@ -62,35 +62,20 @@ public class s169199 {
 
   private int[] getLoc(String[] board, int row, int col, int[] direct) {
     int[] loc = new int[]{row, col};
-    if (direct[0] == 0) {
-
-      for (int i = 0; i < colLen; i++) {
-        if (isPossible(loc[0], loc[1] + direct[1])) {
-          if (board[loc[0]].charAt(loc[1] + direct[1]) == 'D') {
-            return loc;
-          } else {
-            loc[1] += direct[1];
-          }
-        } else {
-          break;
-        }
+    
+    for (int i = 0; i < Math.max(colLen, rowLen); i++) {
+      if (!isPossible(loc[0] + direct[0], loc[1] + direct[1])) {
+        break;
       }
 
-    } else if (direct[1] == 0) {
-
-      for (int i = 0; i < rowLen; i++) {
-        if (isPossible(loc[0] + direct[0], loc[1])) {
-          if (board[loc[0] + direct[0]].charAt(loc[1]) == 'D') {
-            return loc;
-          } else {
-            loc[0] += direct[0];
-          }
-        } else {
-          break;
-        }
+      if (board[loc[0] + direct[0]].charAt(loc[1] + direct[1]) == 'D') {
+        return loc;
+      } else {
+        loc[0] += direct[0];
+        loc[1] += direct[1];
       }
-
     }
+
     return loc;
   }
 
