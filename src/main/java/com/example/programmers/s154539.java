@@ -15,12 +15,6 @@ public class s154539 {
     stack.add(numbers[numbers.length - 1]);
 
     for (int i = numbers.length - 2; i >= 0; i--) {
-      if (stack.peek() > numbers[i]) {
-        answer[i] = stack.peek();
-        stack.add(numbers[i]);
-        continue;
-      }
-
       while (true) {
         if (stack.isEmpty()) {
           answer[i] = -1;
