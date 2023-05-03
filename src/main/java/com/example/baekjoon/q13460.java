@@ -62,6 +62,7 @@ public class q13460 {
   private static int Solution() {
 
     int answer = -1;
+
     PriorityQueue<Node> queue = new PriorityQueue<>((o1, o2) -> o1.cost - o2.cost);
     boolean[][][][] visited = new boolean[N][M][N][M];
     visited[start.rr][start.rc][start.br][start.bc] = true;
@@ -70,12 +71,13 @@ public class q13460 {
     while (!queue.isEmpty()) {
       Node now = queue.poll();
 
-      if (now.cost >= 10) {
-        break;
-      }
 
       if (now.rr == er && now.rc == ec) {
         answer = now.cost;
+        break;
+      }
+
+      if (now.cost > 10) {
         break;
       }
 
@@ -101,8 +103,6 @@ public class q13460 {
     Node next = new Node(now.rr, now.rc, now.br, now.bc, now.cost);
     if (direct[0] == 0) {
       len = M;
-    } else {
-      len = N;
     }
 
     boolean whole = false;
