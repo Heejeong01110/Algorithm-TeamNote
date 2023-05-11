@@ -3,19 +3,16 @@ package com.example.baekjoon;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
 import java.util.StringTokenizer;
 
 public class q15683 {
 
-  private static final int[][] dir = new int[][]{{0, 1}, {0, -1}, {-1, 0}, {1, 0}};
+  private static final int[][] directs = new int[][]{{0, 1}, {-1, 0}, {0, -1}, {1, 0}};
   private static int N;
   private static int M;
   private static int[][] map;
-
-  private static ArrayList<Node> cctvs;
-  private static int[] minMemo;
-  private static int minCount;
+  private static int cctvCnt;
+  private static int result;
 
   public static void main(String[] args) throws IOException {
     run();
@@ -37,14 +34,14 @@ public class q15683 {
     N = Integer.parseInt(st.nextToken());
     M = Integer.parseInt(st.nextToken());
     map = new int[N][M];
-    cctvs = new ArrayList<>();
+    cctvCnt = 0;
 
     for (int i = 0; i < N; i++) {
       st = new StringTokenizer(br.readLine());
       for (int j = 0; j < M; j++) {
         map[i][j] = Integer.parseInt(st.nextToken());
         if (map[i][j] != 0 && map[i][j] != 6) {
-          cctvs.add(new Node(i, j, map[i][j]));
+          cctvCnt++;
         }
       }
     }
@@ -53,229 +50,98 @@ public class q15683 {
   }
 
   private static int Solution() {
-    boolean[][] result = new boolean[N][M];
-    cctvs.sort(((o1, o2) -> o2.type - o1.type));
-    int count = 0;
+    result = N * M;
+    dfs(0, 0, map);
 
-    for (int i = 0; i < N; i++) {
-      for (int j = 0; j < M; j++) {
-        if (map[i][j] != 0) {
-          result[i][j] = true;
-        } else {
-          count++;
-        }
-      }
-    }
-    minCount = count;
-
-    dfs(result, 0, count);
-
-    return minCount;
+    return result;
   }
 
 
-  private static void dfs(boolean[][] visited, int depth, int count) {
-    if (count == 0) {
-      minCount = 0;
-      return;
-    }
-
-    if (minCount == 0) {
-      return;
-    }
-
-    if (depth == cctvs.size()) {
-      if (minCount > count) {
-        minCount = count;
+  private static void dfs(int idx, int cctvNow, int[][] mapCpy) {
+    if (idx == N * M || cctvNow == cctvCnt) {
+      int cnt = 0;
+      for (int i = 0; i < N; i++) {
+        for (int j = 0; j < M; j++) {
+          if (mapCpy[i][j] == 0) {
+            cnt++;
+          }
+        }
       }
+      result = Math.min(result, cnt);
       return;
     }
 
-    Node now = cctvs.get(depth);
-    int row;
-    int col;
-    int[] dirCount = new int[4];
-    for (int d = 0; d < 4; d++) {
-      row = now.row + dir[d][0];
-      col = now.col + dir[d][1];
-      while (true) {
-        if (isPossible(row, col) && map[row][col] != 6) {
-          dirCount[d] += 1;
-        } else {
-          break;
+    int row = idx / M;
+    int col = idx % M;
+
+    if (map[row][col] == 0 || map[row][col] == 6) {
+      dfs(idx + 1, cctvNow, mapCpy);
+
+    } else if (map[row][col] == 5) {
+      int[][] mapClone = getClone(mapCpy);
+      for (int i = 0; i < 4; i++) {
+        checkDir(mapClone, i, row, col);
+      }
+      dfs(idx + 1, cctvNow + 1, mapClone);
+
+    } else if (map[row][col] == 4) {
+      for (int i = 0; i < 4; i++) {
+        int[][] mapClone = getClone(mapCpy);
+        for (int j = 0; j < 3; j++) {
+          int dir = (i + j) % 4;
+          checkDir(mapClone, dir, row, col);
         }
-        row += dir[d][0];
-        col += dir[d][1];
+        dfs(idx + 1, cctvNow + 1, mapClone);
+      }
+
+    } else if (map[row][col] == 3) {
+      for (int i = 0; i < 4; i++) {
+        int[][] mapClone = getClone(mapCpy);
+        for (int j = 0; j < 2; j++) {
+          int dir = (i + j) % 4;
+          checkDir(mapClone, dir, row, col);
+        }
+        dfs(idx + 1, cctvNow + 1, mapClone);
+      }
+
+    } else if (map[row][col] == 2) {
+      for (int i = 0; i < 2; i++) {
+        int[][] mapClone = getClone(mapCpy);
+        checkDir(mapClone, i, row, col);
+        checkDir(mapClone, i + 2, row, col);
+        dfs(idx + 1, cctvNow + 1, mapClone);
+      }
+
+    } else if (map[row][col] == 1) {
+      for (int i = 0; i < 4; i++) {
+        int[][] mapClone = getClone(mapCpy);
+        checkDir(mapClone, i, row, col);
+        dfs(idx + 1, cctvNow + 1, mapClone);
       }
     }
 
-    boolean[][] cloneVis = new boolean[N][M];
-    int cnt = 0;
-    switch (now.type) {
-      case 1:
-        for (int d = 0; d < 4; d++) {
-          for (int i = 0; i < visited.length; i++) {
-            cloneVis[i] = visited[i].clone();
-          }
+  }
 
-          row = now.row;
-          col = now.col;
-          cnt = 0;
-          for (int i = 0; i < dirCount[d]; i++) {
-            row += dir[d][0];
-            col += dir[d][1];
-            if (!cloneVis[row][col]) {
-              cloneVis[row][col] = true;
-              cnt++;
-            }
-          }
-          dfs(cloneVis, depth + 1, count - cnt);
-        }
+  private static int[][] getClone(int[][] mapCpy) {
+    int[][] newMap = new int[N][M];
+    for (int i = 0; i < N; i++) {
+      newMap[i] = mapCpy[i].clone();
+    }
+    return newMap;
+  }
+
+  private static void checkDir(int[][] map, int dir, int row, int col) {
+    int len = dir % 2 == 0 ? M : N;
+    for (int i = 0; i < len; i++) {
+      int nr = row + directs[dir][0] * i;
+      int nc = col + directs[dir][1] * i;
+      if (!isPossible(nr, nc) || map[nr][nc] == 6) {
         break;
+      }
 
-      case 2:
-        for (int d = 0; d < 2; d += 2) {
-          for (int i = 0; i < visited.length; i++) {
-            cloneVis[i] = visited[i].clone();
-          }
-
-          row = now.row;
-          col = now.col;
-          cnt = 0;
-          for (int i = 0; i < dirCount[d]; i++) {
-            row += dir[d][0];
-            col += dir[d][1];
-            if (!cloneVis[row][col]) {
-              cloneVis[row][col] = true;
-              cnt++;
-            }
-          }
-
-          row = now.row;
-          col = now.col;
-          for (int i = 0; i < dirCount[d + 1]; i++) {
-            row += dir[d + 1][0];
-            col += dir[d + 1][1];
-            if (!cloneVis[row][col]) {
-              cloneVis[row][col] = true;
-              cnt++;
-            }
-          }
-          dfs(cloneVis, depth + 1, count - cnt);
-        }
-        break;
-
-      case 3:
-
-        cnt = 0;
-        for (int d = 0; d < 2; d++) {
-          for (int i = 0; i < visited.length; i++) {
-            cloneVis[i] = visited[i].clone();
-          }
-
-          row = now.row;
-          col = now.col;
-          for (int i = 0; i < dirCount[d]; i++) {
-            row += dir[d][0];
-            col += dir[d][1];
-            if (!cloneVis[row][col]) {
-              cloneVis[row][col] = true;
-              cnt++;
-            }
-          }
-
-          for (int j = 2; j < 4; j++) {
-            boolean[][] clone2 = new boolean[N][M];
-            int newCnt = 0;
-            for (int i = 0; i < visited.length; i++) {
-              clone2[i] = cloneVis[i].clone();
-            }
-
-            row = now.row;
-            col = now.col;
-            for (int i = 0; i < dirCount[j]; i++) {
-              row += dir[i][0];
-              col += dir[i][1];
-              if (!clone2[row][col]) {
-                clone2[row][col] = true;
-                newCnt++;
-              }
-            }
-            dfs(clone2, depth + 1, count - cnt - newCnt);
-          }
-
-        }
-
-        break;
-
-      case 4:
-        cnt = 0;
-        for (int i = 0; i < visited.length; i++) {
-          cloneVis[i] = visited[i].clone();
-        }
-
-        for (int d = 0; d < 4; d++) {
-
-          row = now.row;
-          col = now.col;
-          for (int i = 0; i < dirCount[d]; i++) {
-            row += dir[d][0];
-            col += dir[d][1];
-
-            if (!cloneVis[row][col]) {
-              cloneVis[row][col] = true;
-              cnt++;
-            }
-          }
-        }
-
-        for (int d = 0; d < 4; d++) {
-          boolean[][] clone2 = new boolean[N][M];
-          for (int i = 0; i < visited.length; i++) {
-            clone2[i] = cloneVis[i].clone();
-          }
-
-          row = now.row;
-          col = now.col;
-          int newCnt = 0;
-          for (int i = 0; i < dirCount[d]; i++) {
-            row += dir[d][0];
-            col += dir[d][1];
-
-            if (clone2[row][col]) {
-              clone2[row][col] = false;
-              newCnt++;
-            }
-          }
-
-          dfs(clone2, depth + 1, count - cnt + newCnt);
-        }
-
-        break;
-      case 5:
-        cnt = 0;
-        for (int i = 0; i < visited.length; i++) {
-          cloneVis[i] = visited[i].clone();
-        }
-
-        for (int d = 0; d < 4; d++) {
-          row = now.row;
-          col = now.col;
-          for (int i = 0; i < dirCount[d]; i++) {
-            row += dir[d][0];
-            col += dir[d][1];
-
-            if (!cloneVis[row][col]) {
-              cloneVis[row][col] = true;
-              cnt++;
-            }
-          }
-        }
-        dfs(cloneVis, depth + 1, count - cnt);
-
-        break;
-      default:
-        break;
+      if (map[nr][nc] == 0) {
+        map[nr][nc] = -1;
+      }
     }
   }
 
@@ -283,18 +149,4 @@ public class q15683 {
     return row >= 0 && row < N && col >= 0 && col < M;
   }
 
-
-  private static class Node {
-
-    int row;
-    int col;
-    int type;
-
-    public Node(int row, int col, int type) {
-      this.row = row;
-      this.col = col;
-      this.type = type;
-    }
-
-  }
 }
