@@ -3,177 +3,133 @@ package com.example.baekjoon;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Objects;
-import java.util.PriorityQueue;
+import java.util.LinkedList;
 import java.util.Queue;
 import java.util.StringTokenizer;
 
 public class q16236 {
 
-  private static final int[][] direct = new int[][]{{-1, 0}, {0, -1}, {0, 1}, {1, 0}};
-  private static int N;
-  private static int M;
-  private static int[][] map;
+  private static final int max_val = 401, max_int = 21;
+  public static int n, shark_x, shark_y, min_dist, min_x, min_y, result, eat_cnt = 0, shark_size = 2;
+  public static int [][] a, check;
+  public static int [] dx = {0, 0, 1, -1}, dy = {-1, 1, 0, 0};
+
 
   public static void main(String[] args) throws IOException {
-    run();
-  }
-
-  public static void run() throws IOException {
-    inputData();
-    output(Solution());
-  }
-
-  private static void output(int result) {
-    System.out.print(result);
-  }
-
-  private static void inputData() throws IOException {
+    // TODO Auto-generated method stub
     BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
-    StringTokenizer st = new StringTokenizer(br.readLine());
-    N = Integer.parseInt(st.nextToken());
-    M = 0;
-    map = new int[N][N];
+    n = Integer.parseInt(br.readLine());
+    a = new int[n + 1][n + 1];
+    check = new int[n+1][n+1];
 
-    for (int i = 0; i < N; i++) {
-      st = new StringTokenizer(br.readLine());
-      for (int j = 0; j < N; j++) {
-        map[i][j] = Integer.parseInt(st.nextToken());
-        if (map[i][j] != 0 && map[i][j] != 9) {
-          M++;
+    for(int i=1; i<=n; i++){
+      StringTokenizer st = new StringTokenizer(br.readLine());
+      for(int j=1; j<=n; j++){
+        a[i][j] = Integer.parseInt(st.nextToken());
+
+        if(a[i][j] == 9){
+          shark_x = i;
+          shark_y = j;
+          a[i][j] = 0;
         }
       }
     }
 
-    br.close();
+
+    while(true){
+      init_check();
+
+      bfs(shark_x, shark_y);
+
+      if(min_x != max_int && min_y != max_int){
+        result += check[min_x][min_y];
+
+        eat_cnt++;
+
+        if(eat_cnt == shark_size){
+          shark_size++;
+          eat_cnt = 0;
+        }
+
+        a[min_x][min_y] = 0;
+
+        shark_x = min_x;
+        shark_y = min_y;
+      }
+
+      else{
+        break;
+      }
+    }
+
+    System.out.println(result);
   }
 
-  private static int Solution() {
-    if (M == 0) {
-      return 0;
-    }
+  public static void init_check(){
+    min_dist = max_val;
+    min_x = max_int;
+    min_y = max_int;
 
-
-
-    Node baby = null;
-    ArrayList<Node> foods = new ArrayList<>();
-
-    for (int i = 0; i < N; i++) {
-      for (int j = 0; j < N; j++) {
-        if (map[i][j] == 9) {
-          baby = new Node(i, j, 2);
-          map[i][j] = 2;
-        } else if (map[i][j] != 0 && map[i][j] != 9) {
-          foods.add(new Node(i, j, map[i][j]));
-        }
+    for(int i=1; i<=n; i++){
+      for(int j=1; j<=n; j++){
+        check[i][j] = -1;
       }
     }
+  }
 
-    int result = 0;
-    int eatFood = 0;
-    Node nextNode = null;
-    while (!foods.isEmpty()) {
+  private static  void bfs(int x, int y){
+    Queue<info> q = new LinkedList<info>();
+    check[x][y] = 0;
+    q.add(new info(x, y));
 
-      Queue<Node> aryQueue = new ArrayDeque<>();
-      boolean temp = false;
-      aryQueue.add(baby);
-      boolean[][] visited = new boolean[N][N];
-      visited[baby.row][baby.col] = true;
-      PriorityQueue<Node> pq;
+    while(!q.isEmpty()){
+      info cur = q.poll();
+      x = cur.x;
+      y = cur.y;
 
+      for(int i=0; i<4; i++){
+        int nx = x + dx[i];
+        int ny = y + dy[i];
 
-      while (!aryQueue.isEmpty()) {
-        int size = aryQueue.size();
+        if(nx < 1 || nx > n || ny < 1 || ny > n) continue;
+        if(check[nx][ny] != -1 || a[nx][ny] > shark_size) continue;
 
-        pq = new PriorityQueue<>((o1, o2) -> {
-          if (o1.row == o2.row) {
-            return o1.col - o2.col;
+        check[nx][ny] = check[x][y] + 1;
+
+        if(a[nx][ny] != 0 && a[nx][ny] < shark_size){
+
+          if(min_dist > check[nx][ny]){
+            min_x = nx;
+            min_y = ny;
+            min_dist = check[nx][ny];
           }
-          return o1.row - o2.row;
-        });
-        pq.addAll(aryQueue);
-        aryQueue.clear();
-
-        for (int t = 0; t < size; t++) {
-          Node n = pq.poll();
-          if (n.size != 0 && n.size < baby.size) {
-            nextNode = n;
-            map[baby.row][baby.col] = 0;
-            map[n.row][n.col] = 9;
-            foods.remove(n);
-            result += (Math.abs(baby.row - n.row) + Math.abs(baby.col - n.col));
-            temp = true;
-            t = size;
-            break;
-          } else if (n.size > baby.size) {
-            continue;
-          }
-
-          for (int i = 0; i < 4; i++) {
-            int nr = n.row + direct[i][0];
-            int nc = n.col + direct[i][1];
-            if (isPossible(nr, nc) && !visited[nr][nc] && map[nr][nc] <= baby.size) {
-              aryQueue.add(new Node(nr, nc, map[nr][nc]));
-              visited[nr][nc] = true;
+          else if(min_dist == check[nx][ny]){
+            if(min_x == nx){
+              if(min_y > ny){
+                min_x = nx;
+                min_y = ny;
+              }
+            }else if(min_x > nx){
+              min_x = nx;
+              min_y = ny;
             }
           }
         }
-      }
 
-      if (temp) { //먹고 나올경우
-        nextNode.size = baby.size;
-        baby = nextNode;
-        eatFood += 1;
-        if (baby.size == eatFood) {
-          baby.size += 1;
-          eatFood = 0;
-        }
-        map[baby.row][baby.col] = baby.size;
-      } else { //못먹고 나올경우
-        break;
+        q.add(new info(nx, ny));
       }
-
     }
 
-    return result;
   }
 
-  private static boolean isPossible(int nr, int nc) {
-    return nr >= 0 && nr < N && nc >= 0 && nc < N;
-  }
+  private static class info{
+    int x, y;
 
-
-  private static class Node {
-
-    int row;
-    int col;
-    int size;
-
-    public Node(int row, int col, int size) {
-      this.row = row;
-      this.col = col;
-      this.size = size;
+    info(int x, int y){
+      this.x = x;
+      this.y = y;
     }
-
-    @Override
-    public boolean equals(Object o) {
-      if (this == o) {
-        return true;
-      }
-      if (!(o instanceof Node)) {
-        return false;
-      }
-      Node node = (Node) o;
-      return row == node.row && col == node.col && size == node.size;
-    }
-
-    @Override
-    public int hashCode() {
-      return Objects.hash(row, col, size);
-    }
-  }
+  };
 
 }
