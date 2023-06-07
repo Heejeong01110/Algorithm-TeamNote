@@ -1,72 +1,68 @@
 package com.example.programmers;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
 public class s87377 {
 
   public String[] solution(int[][] line) {
-    String[] answer = {};
-    ArrayList<int[]> pos = new ArrayList<>();
+    ArrayList<long[]> pos = new ArrayList<>();
+    long minX = Long.MAX_VALUE, minY = Long.MAX_VALUE, maxX = Long.MIN_VALUE, maxY = Long.MIN_VALUE;
 
-    int rowMin = Integer.MAX_VALUE;
-    int rowMax = Integer.MIN_VALUE;
-    int cmin = Integer.MAX_VALUE;
-    int cmax = Integer.MIN_VALUE;
-    double x = 0, y = 0, c = 0, x1 = 0, y1 = 0;
     for (int i = 0; i < line.length; i++) {
+      long a = line[i][0];
+      long b = line[i][1];
+      long e = line[i][2];
       for (int j = i + 1; j < line.length; j++) {
+        long c = line[j][0];
+        long d = line[j][1];
+        long f = line[j][2];
 
-        if (line[i][0] == 0) {
-          y1 = (-1.0) * line[i][2] / (line[i][1]);
-          x1 = ((-1) * line[j][1] * y1 + (-1) * line[j][2]) / line[j][0];
-        } else if (line[i][1] == 0) {
-          x1 = (-1.0) * line[i][2] / (line[i][0]);
-          y1 = ((-1) * line[j][0] * x1 + (-1) * line[j][2]) / line[j][1];
-        } else if (line[j][0] == 0) {
-          y1 = (-1.0) * line[j][2] / (line[j][1]);
-          x1 = ((-1) * line[i][1] * y1 + (-1) * line[i][2]) / line[i][0];
-        } else if (line[j][1] == 0) {
-          x1 = (-1.0) * line[j][2] / (line[j][0]);
-          y1 = ((-1) * line[i][0] * x1 + (-1) * line[i][2]) / line[i][1];
-        } else {
-          double divide = line[j][0] == 0 ? 0 : (-1.0) * line[i][0] / line[j][0];
-          x = line[i][0] + line[j][0] * divide;
-          y = line[i][1] + line[j][1] * divide;
-          c = line[i][2] + line[j][2] * divide;
-          y1 = y == 0 ? 0 : (-1) * c / y;
-          x1 = ((-1) * line[i][1] * y1 + (-1) * line[i][2]) / line[i][0];
+        long down = a * d - b * c;
+        if (down == 0) {
+          continue;
         }
 
-        if (x1 % 1L == 0.0 && y1 % 1 == 0.0) {
-          rowMax = Math.max(rowMax, (int) y1);
-          rowMin = Math.min(rowMin, (int) y1);
-          cmin = Math.min(cmin, (int) x1);
-          cmax = Math.max(cmax, (int) x1);
-          pos.add(new int[]{(int) x1, (int) y1});
+        long xUp = b * f - e * d;
+        long yUp = e * c - a * f;
+
+        double nx = xUp / (double) down;
+        double ny = yUp / (double) down;
+        if (nx == Math.ceil(nx) && ny == Math.ceil(ny)) {
+          minX = Math.min(minX, (long) nx);
+          minY = Math.min(minY, (long) ny);
+          maxX = Math.max(maxX, (long) nx);
+          maxY = Math.max(maxY, (long) ny);
+          pos.add(new long[]{(long) nx, (long) ny});
         }
       }
     }
 
-    pos.sort((o1, o2) -> {
-      if (o1[0] == o2[0]) {
-        return o1[1] - o2[1];
-      }
-      return o2[0] - o1[0];
-    });
+    boolean[][] answerTemp = new boolean[(int) (maxY - minY + 1)][(int) (maxX - minX + 1)];
 
-    answer = new String[rowMax - rowMin + 1];
-    Arrays.fill(answer, ".".repeat((cmax - cmin + 1)));
-    for (int i = 0; i < pos.size(); i++) {
-      int row = -(pos.get(i)[1] - rowMax);
-      int col = (pos.get(i)[0] - cmin);
-      if (col == 0) {
-        answer[row] = "*" + answer[row].substring(1);
-      } else {
-        answer[row] = answer[row].substring(0, col) + "*" + answer[row].substring(col + 1);
+    for (long[] ints : pos) {
+      int x = (int) (ints[0] - minX);
+      int y = (int) (ints[1] - maxY);
+
+      answerTemp[Math.abs(y)][Math.abs(x)] = true;
+    }
+
+    String[] answer = new String[answerTemp.length];
+
+    int i = 0;
+    for (boolean[] bs : answerTemp) {
+      StringBuilder sb = new StringBuilder();
+      for (boolean b : bs) {
+        if (b) {
+          sb.append("*");
+        } else {
+          sb.append(".");
+        }
       }
+      answer[i] = sb.toString();
+      i++;
     }
 
     return answer;
   }
+
 }
