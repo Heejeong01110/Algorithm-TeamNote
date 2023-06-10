@@ -40,34 +40,24 @@ public class q1285 {
 
   private static int Solution() {
     int res = Integer.MAX_VALUE;
-    int[][] cpy_map = new int[N][N];
-
     for (int bit = 0; bit < (1 << N); bit++) {
-      //0. 맵 clone
-      for (int i = 0; i < N; i++) {
-        cpy_map[i] = map[i].clone();
-      }
+      //어떤 가로줄을 뒤집을 것인지 bit생성
+      int sum = 0;
 
-      //1. bit에 따라 뒤집을 열 뒤집어주기
-      for (int r = 0; r < N; r++) {
-        int next = (int) Math.pow(2, r); // 0, 1, 10, 100, 1000, ....
-        if ((next & bit) != 0) {
-          for (int c = 0; c < N; c++) {
-            cpy_map[r][c] = cpy_map[r][c] == 0 ? 1 : 0;
-          }
-        }
-      }
-
-      //행 뒤집을지 말지 체크
-      int cnt = 0;
-      for (int c = 0; c < N; c++) {
+      for (int c = 0; c < N; c++) { //세로로 한줄씩 탐색
+        //세로줄을 한 단위로 탐색하지만 비트마스크 체크값은 어떤 가로줄을 뒤집을지를 기준으로 확인
         int T = 0;
-        for (int r = 0; r < N; r++) {
-          T += cpy_map[r][c];
+        for (int r = 0; r < N; r++) {//위에서부터 하나씩 내려오면서 확인
+          int now = map[r][c];
+          if ((bit & (1 << r)) != 0) {//뒤집기로 한 열인 경우
+            now = (now + 1) % 2;
+          }
+          T += now;
         }
-        cnt += Math.min(N - T, T);
+        //즉, 비트마스크에 의해 가로줄 뒤집기는 결정되어있는 상태로 세로줄을 하나씩 탐색해서 나오는 최소값을 저장
+        sum += Math.min(N - T, T);
       }
-      res = Math.min(res, cnt);
+      res = Math.min(res, sum);
     }
     return res;
   }
