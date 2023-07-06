@@ -1,36 +1,55 @@
 package com.example.programmers;
 
+import java.util.Stack;
+
 //징검다리 건너기
 public class s64062 {
 
   public static int solution(int[] stones, int k) {
-    int minSum = 600_000_000;
-    int idx = 0;
-    int[] ary = new int[stones.length];
 
-    ary[0] = stones[0];
+    Stack<Node> stack = new Stack<>();
+    stack.add(new Node(0, stones[0]));
     for (int i = 1; i < stones.length; i++) {
-      ary[i] = ary[i - 1] + stones[i];
+      int now = 0;
+      while (!stack.isEmpty()) {
+        if (stack.peek().idx < i - k) {
+          break;
+        }
+        Node pre = stack.pop();
+        int per = Math.min(stones[i] - now, pre.people);
+        now += per;
+        if (per < pre.people) {
+          stack.add(new Node(pre.idx, pre.people - per));
+          break;
+        }
+      }
+
+      if (i < k) {
+        now = stones[i];
+      }
+      stack.add(new Node(i, now));
     }
 
-    for (int i = 0; i <= stones.length - k; i++) {
-      int sum = ary[i + k - 1] - ary[i];
-      if (i == 0) {
-        sum = ary[i + k - 1];
+    int answer = 0;
+    while (!stack.isEmpty()) {
+      Node next = stack.pop();
+      if (next.idx < stones.length - k) {
+        break;
       }
-      if (minSum > sum) {
-        minSum = sum;
-        idx = i;
-      }
+      answer += next.people;
     }
-
-    int result = 0;
-    for (int i = 0; i < k; i++) {
-      if (result < stones[idx + i]) {
-        result = stones[idx + i];
-      }
-    }
-
-    return result;
+    return answer;
   }
+
+  private static class Node {
+
+    int idx;
+    int people;
+
+    public Node(int idx, int people) {
+      this.idx = idx;
+      this.people = people;
+    }
+  }
+
 }
