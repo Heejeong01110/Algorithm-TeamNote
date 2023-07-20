@@ -5,93 +5,82 @@ import java.util.PriorityQueue;
 
 public class s214288 {
 
-  private ArrayList<User> users;
+  private ArrayList<User>[] users;
   private int P, K, N;
-  private int result;
+  private int answer;
 
 
   public int solution(int k, int n, int[][] reqs) {
-    result = Integer.MAX_VALUE;
+    answer = Integer.MAX_VALUE;
     P = reqs.length;
     K = k;
     N = n;
-    users = new ArrayList<>();
-    for (int[] req : reqs) {
-      users.add(new User(req[2], req[0], req[0] + req[1]));
-    }
-    users.sort((o1, o2) -> o1.start == o2.start ? o1.end - o2.end : o1.start - o2.start);
-    int[] types = new int[K + 1];
+    users = new ArrayList[K + 1];
     for (int i = 1; i <= K; i++) {
-      types[i] = 1;
+      users[i] = new ArrayList<>();
+    }
+    for (int[] req : reqs) {
+      users[req[2]].add(new User(req[2], req[0], req[0] + req[1]));
+    }
+    for (int i = 1; i <= K; i++) {
+      users[i].sort((o1, o2) -> o1.start == o2.start ? o1.end - o2.end : o1.start - o2.start);
     }
 
-    dfs(types, new int[K + 1], 0, k, 0, new PriorityQueue<>((o1, o2) -> o1.end - o2.end));
+    int[][] typeMap = new int[K + 1][P + 1];
+    int usedMentor = 0, delaySum = 0;
+    PriorityQueue<User> queue;
 
-    return result;
+    for (int kk = 1; kk <= K; kk++) {//kk타입인 참가자 체크
+      int size = users[kk].size();
+      for (int s = 1; s < size; s++) { //멘토가 s명일 경우 대기시간 구하기
+        queue = new PriorityQueue<>((o1, o2) -> o1.end - o2.end);
+        usedMentor = 0;
+        delaySum = 0;
+
+        for (int i = 0; i < size; i++) {
+          User user = users[kk].get(i);
+
+          while (!queue.isEmpty()) {
+            if (queue.peek().end > user.start) {
+              break;
+            }
+            usedMentor -= 1;
+            queue.poll();
+          }
+
+          if (s - usedMentor > 0) {
+            //1. 상담 중이 아닌 멘토가 있을 때
+            usedMentor += 1;
+            queue.add(user);
+          } else {//2. 모두 상담중일 경우 -> 대기 후 상담(먼저 상담요청한 참가자 우선)
+            int delayTime = queue.poll().end - user.start;
+            delaySum += delayTime;
+            User delayUser = new User(user.type, user.start + delayTime, user.end + delayTime);
+            queue.add(delayUser);
+          }
+        }
+        typeMap[kk][s] = delaySum;
+      }
+    }
+
+    dfs(new int[K + 1], N, 1, typeMap);
+    return answer;
   }
 
-  private void dfs(int[] types, int[] usedTypes, int delaySum, int typeSum, int now,
-      PriorityQueue<User> preQueue) {
-    if (delaySum >= result) {
+  private void dfs(int[] result, int remain, int idx, int[][] typeMap) {
+    if (idx == K) {
+      result[idx] = remain;
+      int sum = 0;
+      for (int i = 1; i <= K; i++) {
+        sum += typeMap[i][result[i]];
+      }
+      answer = Math.min(answer, sum);
       return;
     }
-
-    if (now == P) {
-      result = Math.min(result, delaySum);
-      return;
+    for (int i = 1; i < remain - (K - idx); i++) {
+      result[idx] = i;
+      dfs(result, remain - result[idx], idx + 1, typeMap);
     }
-
-    //1. now의 시작시간 전에 끝나는 queue내용 다 꺼내기
-    User user = users.get(now);
-    int nowStartTime = user.start;
-    PriorityQueue<User> queue = new PriorityQueue<>(preQueue);
-    while (!queue.isEmpty()) {
-      if (queue.peek().end > nowStartTime) {
-        break;
-      }
-      usedTypes[queue.peek().type] -= 1;
-      queue.poll();
-    }
-
-    //2. now를 상담하는경우, 대기했다가 하는 경우
-    if (types[user.type] - usedTypes[user.type] > 0) {//2-1. 쉬는시간인 type멘토가 있을 경우 --> 즉시 배정
-      usedTypes[user.type] += 1;
-      queue.add(user);
-      dfs(types.clone(), usedTypes.clone(), delaySum, typeSum, now + 1, queue);
-      usedTypes[user.type] -= 1;
-      queue.remove(user);
-    } else {// 2-2. 쉬는시간인 type멘토가 없을 경우 --> 새로배정, 대기 후 배정
-      //1. 새로 배정
-      if (typeSum < N) {//새로 타입 지정 가능한 경우만
-        types[user.type] += 1;
-        typeSum += 1;
-        usedTypes[user.type] += 1;
-        queue.add(user);
-        dfs(types.clone(), usedTypes.clone(), delaySum, typeSum, now + 1, queue);
-        types[user.type] -= 1;
-        typeSum -= 1;
-        usedTypes[user.type] -= 1;
-        queue.remove(user);
-      }else{ //모두 상담중인 경우만 --> 딜레이
-        int delayTime = getDelay(user, queue); //1. 딜레이 시간 구하기
-        User delayUser = new User(user.type, user.start + delayTime, user.end + delayTime);
-        queue.add(delayUser);
-        dfs(types.clone(), usedTypes.clone(), delaySum + delayTime, typeSum, now + 1, queue);
-        queue.remove(delayUser);
-      }
-    }
-  }
-
-  private int getDelay(User user, PriorityQueue<User> preQueue) { //해당 유저의 delay시간 구하기
-    PriorityQueue<User> queue = new PriorityQueue<>(preQueue);
-    while (!queue.isEmpty()) {
-      if (queue.peek().type == user.type) {
-        preQueue.remove(queue.peek());
-        return queue.peek().end - user.start;
-      }
-      queue.poll();
-    }
-    return -1;
   }
 
   private class User {
