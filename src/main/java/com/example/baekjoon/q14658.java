@@ -18,38 +18,28 @@ public class q14658 {
   public static void run() throws IOException {
     inputData();
 
-    int answer = 0;
     ArrayList<Star> stars = new ArrayList<>();
     for (int[] star : inputs) {
       stars.add(new Star(star[0], star[1]));
     }
-    stars.sort((o1, o2) -> (o1.row + o1.col) - (o2.row + o2.col));
 
-    while (!stars.isEmpty()) {
-      answer++;
-      int sr = N, sc = M;
-      for (Star star : stars) {
-        if (star.row - sr > L && star.col - sc > L) {
-          break;
-        }
-        sr = Math.min(sr, star.row);
-        sc = Math.min(sc, star.col);
-      }
+    int answer = 0;
+    for (int i = 0; i < stars.size(); i++) {
+      for (int j = 0; j < stars.size(); j++) {
+        Star s1 = stars.get(i);
+        Star s2 = stars.get(j);
 
-      int idx = 0;
-      while (!stars.isEmpty()) {
-        Star star = stars.get(idx);
-        if (star.row - sr > L && star.col - sc > L) {
-          break;
+        int cnt = 0;
+        for (Star s3 : stars) {
+          if (s3.row >= s1.row && s3.row <= s1.row + L && s3.col >= s2.col && s3.col <= s2.col + L) {
+            cnt++;
+          }
         }
-        if (star.row >= sr && star.row <= sr + L && star.col >= sc && star.col <= sc + L) {
-          stars.remove(star);
-          idx--;
-        }
-        idx++;
+        answer = Math.max(answer, cnt);
       }
     }
-    System.out.print(answer);
+
+    System.out.print(stars.size() - answer);
   }
 
   private static void inputData() throws IOException {
