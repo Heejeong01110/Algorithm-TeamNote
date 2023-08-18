@@ -16,7 +16,7 @@ public class s131704 {
         boxIdx++;
         continue;
       }
-      
+
       if (!stack.isEmpty() && stack.peek() == order[truckNowIdx]) {
         truckNowIdx++;
         stack.pop();
