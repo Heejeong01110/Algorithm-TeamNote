@@ -44,9 +44,16 @@ public class q17182 {
   }
 
   private static int Solution() {
-    costMap = new int[N][N];
-    for (int i = 0; i < N; i++) {
-      costMap[i] = dijkstra(i);
+
+    for (int k = 0; k < N; k++) {
+      for (int i = 0; i < N; i++) {
+        for (int j = 0; j < N; j++) {
+          if (i == j) {
+            continue;
+          }
+          moves[i][j] = Math.min(moves[i][j], moves[i][k] + moves[k][j]);
+        }
+      }
     }
 
     boolean[] visited = new boolean[N];
@@ -54,27 +61,6 @@ public class q17182 {
     ans = Integer.MAX_VALUE;
     dfs(1, K, visited, 0);
     return ans;
-  }
-
-  private static int[] dijkstra(int start) {
-    PriorityQueue<Node> queue = new PriorityQueue<>((o1, o2) -> o1.cost - o2.cost);
-    int[] cost = new int[N];
-    Arrays.fill(cost, Integer.MAX_VALUE);
-
-    queue.add(new Node(start, 0));
-    cost[start] = 0;
-
-    while (!queue.isEmpty()) {
-      Node now = queue.poll();
-
-      for (int i = 0; i < N; i++) {
-        if (now.idx != i && cost[i] > now.cost + moves[now.idx][i]) {
-          cost[i] = now.cost + moves[now.idx][i];
-          queue.add(new Node(i, cost[i]));
-        }
-      }
-    }
-    return cost;
   }
 
   private static void dfs(int depth, int now, boolean[] visited, int cost) {
@@ -89,7 +75,7 @@ public class q17182 {
     for (int i = 0; i < N; i++) {
       if (!visited[i]) {
         visited[i] = true;
-        dfs(depth + 1, i, visited, cost + costMap[now][i]);
+        dfs(depth + 1, i, visited, cost + moves[now][i]);
         visited[i] = false;
       }
     }
