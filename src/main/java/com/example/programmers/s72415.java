@@ -1,140 +1,130 @@
 package com.example.programmers;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Arrays;
 import java.util.PriorityQueue;
 
 public class s72415 {
 
-  private static final int[][] direct = new int[][]{{0, 1}, {0, -1}, {-1, 0}, {1, 0}};
-  private HashMap<Integer, Card> cards;
+  private static final int[][] dir = new int[][]{{0, 1}, {0, -1}, {-1, 0}, {1, 0}};
+  private int[][] cards;
+  private boolean[] checkCard;
 
   public int solution(int[][] board, int r, int c) {
     int answer = 0;
+    checkCard = new boolean[7];
 
-    //1. 카드 번호 별로 뒤집기 위한 횟수 구하기 (enter - 이동 - enter 까지의 횟수) (중간에 다른 카드가 껴있을 경우를 고려해야 함)
+    cards = new int[7][4];
+    for (int i = 0; i < 7; i++) {
+      Arrays.fill(cards[i], -1);
+    }
 
-    //1. 카드 번호 별로 위치 구하기
-    //2. 각 카드를 모두 연결하는 최소거리(횟수) 구하기
-
-    cards = new HashMap<>();
     for (int i = 0; i < 4; i++) {
       for (int j = 0; j < 4; j++) {
         if (board[i][j] == 0) {
           continue;
         }
-        Card card = cards.getOrDefault(board[i][j], new Card(board[i][j], new ArrayList<>(), 0));
-        card.node.add(new int[]{i, j});
-        cards.put(board[i][j], card);
+        checkCard[board[i][j]] = true;
+        if (cards[board[i][j]][0] == -1) {
+          cards[board[i][j]][0] = i;
+          cards[board[i][j]][1] = j;
+        } else {
+          cards[board[i][j]][2] = i;
+          cards[board[i][j]][3] = j;
+        }
       }
     }
 
-    PriorityQueue<Node> queue = new PriorityQueue<>((o1, o2) -> {
-      if (o1.visCnt == o2.visCnt) {
-        return o1.cnt - o2.cnt;
-      }
-      return o2.visCnt - o1.visCnt;
-    });
+    PriorityQueue<Node> queue = new PriorityQueue<>((o1, o2) -> o1.cnt - o2.cnt);
+    queue.add(new Node(r, c, 0, new boolean[7]));
 
-    queue.add(new Node(r, c, 0, new boolean[7], 0));
-    answer = Integer.MAX_VALUE;
     while (!queue.isEmpty()) {
       Node now = queue.poll();
-      if (answer <= now.cnt) {
-        continue;
-      }
 
-      if (isEnd(now.visited)) {
+      //1. 모든 카드를 뒤집은 경우 종료
+      if (isNothingCard(now.visited)) {
         answer = now.cnt;
         break;
       }
 
-      //1. 현재 자리에 카드가 있을 경우
-      if (board[now.row][now.col] != 0 && !now.visited[board[now.row][now.col]]) {
-        queue.add(getNode(board, now.row, now.col, now, 0));
-        continue;
-      }
+      //카드 이동
+      for (int i = 1; i < checkCard.length; i++) {
+        //1. visited 하지 않은 모든 카드 방문(둘 중 가까운 카드)
+        if (checkCard[i] && !now.visited[i]) {
+          Node one = new Node(cards[i][0], cards[i][1], -1, null);
+          Node two = new Node(cards[i][2], cards[i][3], -1, null);
 
-      //2. 현재 자리에 카드가 없을 경우
-      //2-1. 한번 움직여서 카드위치로 이동할 수 있을 경우
-      boolean temp = false;
-      for (int i = 0; i < 4; i++) {
-        for (int j = 1; j < 4; j++) {
-          int nr = now.row + direct[i][0] * j;
-          int nc = now.col + direct[i][1] * j;
-          if (isPossible(nr, nc) && board[nr][nc] != 0 && !now.visited[board[nr][nc]]) {
-            queue.add(getNode(board, nr, nc, now, 1));
-            temp = true;
-            break;
-          }
+          int nowToOne = getCntBetweenNodes(now, one, now.visited, board);
+          int nowToTwo = getCntBetweenNodes(now, two, now.visited, board);
+          int oneToTwo = getCntBetweenNodes(one, two, now.visited, board);
+          int twoToOne = getCntBetweenNodes(two, one, now.visited, board);
+
+          boolean[] clone = now.visited.clone();
+          clone[i] = true;
+          queue.add(new Node(one.row, one.col, now.cnt + nowToTwo + twoToOne + 2, clone));
+          queue.add(new Node(two.row, two.col, now.cnt + nowToOne + oneToTwo + 2, clone));
         }
       }
-
-      if (temp) {
-        continue;
-      }
-
-      //2-2. 한번 움직여서 카드위치로 이동할 수 없는 경우
-      for (int i = 0; i < 4; i++) {
-        for (int j = 1; j < 4; j++) {
-          int nr = now.row + direct[i][0] * j;
-          int nc = now.col + direct[i][1] * j;
-          if (isPossible(nr, nc)
-              && (board[nr][nc] == 0 || board[nr][nc] != 0 && !now.visited[board[nr][nc]])) {
-            queue.add(new Node(nr, nc, now.cnt + 1, now.visited.clone(), now.visCnt));
-            break;
-          }
-        }
-      }
-
     }
 
     return answer;
   }
 
-  private Node getNode(int[][] board, int row, int col, Node now, int move) {
-    //1. 반대편 짝 찾기
-    int biasRow = 0, biasCol = 0;
-    ArrayList<int[]> nowNodes = cards.get(board[row][col]).node;
-    for (int n = 0; n < 2; n++) {
-      if (nowNodes.get(n)[0] == row && nowNodes.get(n)[1] == col) {
-        biasRow = nowNodes.get((n + 1) % 2)[0];
-        biasCol = nowNodes.get((n + 1) % 2)[1];
+  private int getCntBetweenNodes(Node start, Node end, boolean[] visited, int[][] board) {
+    if (start.row == end.row && start.col == end.col) {
+      return 0;
+    }
+    PriorityQueue<int[]> queue = new PriorityQueue<>((o1, o2) -> o1[2] - o2[2]);
+    boolean[][] vmap = new boolean[4][4];
+
+    queue.add(new int[]{start.row, start.col, 0});
+    vmap[start.row][start.col] = true;
+
+    while (!queue.isEmpty()) {
+      int[] now = queue.poll();
+      if (now[0] == end.row && now[1] == end.col) {
+        return now[2];
+      }
+
+      for (int d = 0; d < 4; d++) {
+        //1. 한칸 이동
+        int nr = now[0] + dir[d][0];
+        int nc = now[1] + dir[d][1];
+        if (isPossible(nr, nc) && !vmap[nr][nc]) {
+          vmap[nr][nc] = true;
+          queue.add(new int[]{nr, nc, now[2] + 1});
+        }
+
+        //2. ctrl + 한칸 이동
+        int er = now[0] + dir[d][0];
+        int ec = now[1] + dir[d][1];
+        for (int move = 0; move < 4; move++) {
+          if (!isPossible(er, ec)) {//막다른 길일 때
+            er -= dir[d][0];
+            ec -= dir[d][1];
+            break;
+          }
+          if (board[er][ec] != 0 && !visited[board[er][ec]]) {//방문안한 카드가 있어서 멈춰야 할 때
+            break;
+          }
+          er += dir[d][0];
+          ec += dir[d][1];
+        }
+        if (!(nr == er && nc == ec) && isPossible(er, ec) && !vmap[er][ec]) {
+          vmap[er][ec] = true;
+          queue.add(new int[]{er, ec, now[2] + 1});
+        }
       }
     }
-    //2. 두가지 위치 모두 뒤집기 표시
-    boolean[] visitedClone = now.visited.clone();
-    visitedClone[board[row][col]] = true;
-
-    //3. 해당 위치로 이동
-    int cnt = getCount(row, col, biasRow, biasCol);
-    return new Node(biasRow, biasCol, now.cnt + cnt + move, visitedClone, now.visCnt + 1);
-  }
-
-  private int getCount(int nr, int nc, int br, int bc) {
-    int cnt = 2;//엔터 2번
-    if (br == 0 || br == 3 || Math.abs(nr - br) == 1) {
-      cnt += 1;
-    } else {
-      cnt += Math.abs(nr - br);
-    }
-
-    if (bc == 0 || bc == 3 || Math.abs(nc - bc) == 1) {
-      cnt += 1;
-    } else {
-      cnt += Math.abs(nc - bc);
-    }
-
-    return cnt;
+    return 0;
   }
 
   private boolean isPossible(int row, int col) {
     return row >= 0 && row < 4 && col >= 0 && col < 4;
   }
 
-  private boolean isEnd(boolean[] visited) {
-    for (Integer key : cards.keySet()) {
-      if (!visited[key]) {
+  private boolean isNothingCard(boolean[] visited) {
+    for (int i = 0; i < visited.length; i++) {
+      if (checkCard[i] && !visited[i]) {
         return false;
       }
     }
@@ -147,29 +137,14 @@ public class s72415 {
     int col;
     int cnt;
 
-    boolean[] visited; //뒤집기 완료한 카드 : true
-    int visCnt;
+    boolean[] visited;
 
-    public Node(int row, int col, int cnt, boolean[] visited, int visCnt) {
+    public Node(int row, int col, int cnt, boolean[] visited) {
       this.row = row;
       this.col = col;
       this.cnt = cnt;
       this.visited = visited;
-      this.visCnt = visCnt;
     }
   }
 
-  private class Card {
-
-    int index;
-    ArrayList<int[]> node;
-
-    int dist;
-
-    public Card(int index, ArrayList<int[]> node, int dist) {
-      this.index = index;
-      this.node = node;
-      this.dist = dist;
-    }
-  }
 }
