@@ -7,9 +7,8 @@ import java.util.StringTokenizer;
 
 public class q {
 
-  private static int N;
-  private static int M;
-  private static int[] ary;
+  private static int N, M;
+  private static int[] inp;
 
   public static void main(String[] args) throws IOException {
     run();
@@ -26,11 +25,11 @@ public class q {
     StringTokenizer st = new StringTokenizer(br.readLine());
     N = Integer.parseInt(st.nextToken());
     M = Integer.parseInt(st.nextToken());
-    ary = new int[N];
+    inp = new int[N];
 
     st = new StringTokenizer(br.readLine());
     for (int i = 0; i < N; i++) {
-      ary[i] = Integer.parseInt(st.nextToken());
+      inp[i] = Integer.parseInt(st.nextToken());
     }
 
     br.close();
