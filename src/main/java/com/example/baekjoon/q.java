@@ -17,11 +17,7 @@ public class q {
 
   public static void run() throws IOException {
     inputData();
-    output(Solution());
-  }
-
-  private static void output(int result) {
-    System.out.print(result);
+    System.out.print(Solution());
   }
 
   private static void inputData() throws IOException {
