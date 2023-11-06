@@ -1,50 +1,41 @@
 package com.example.programmers;
 
-import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.Queue;
 
 public class s84021 {
 
-  private static final int[][] direct = new int[][]{{0, 1}, {0, -1}, {-1, 0}, {1, 0}};
-  private static boolean[][] visitedBoard;
-  private static boolean[][] visitedTable;
+  private static final int[][] dir = new int[][]{{0, 1}, {0, -1}, {-1, 0}, {1, 0}};
   private static int length;
 
   public static int solution(int[][] game_board, int[][] table) {
 
     length = game_board.length;
-    visitedBoard = new boolean[length][length];
-    visitedTable = new boolean[length][length];
 
+    ArrayList<ArrayList<int[]>> puzzles = new ArrayList<>();
     for (int i = 0; i < length; i++) {
       for (int j = 0; j < length; j++) {
-        visitedBoard[i][j] = game_board[i][j] == 0; //블럭이 true, 배경이 false
-        visitedTable[i][j] = table[i][j] == 1; //블럭이 true, 배경이 false
-      }
-    }
-
-    ArrayList<boolean[][]> insertBlocks = new ArrayList<>();
-    ArrayList<boolean[][]> blankBlocks = new ArrayList<>();
-
-    for (int i = 0; i < length; i++) {
-      for (int j = 0; j < length; j++) {
-        if (visitedBoard[i][j]) {
-          blankBlocks.add(createBlock(visitedBoard, i, j));
-        }
-        if (visitedTable[i][j]) {
-          insertBlocks.add(createBlock(visitedTable, i, j));
+        if (table[i][j] == 1) {
+          puzzles.add(getShape(table, i, j, 1));
         }
       }
     }
 
     int answer = 0;
-    for (boolean[][] insertBlock : insertBlocks) {
-      for (boolean[][] blankBlock : blankBlocks) {
-        if (isCorrectBlock(insertBlock, blankBlock)) {
-          answer += countItems(insertBlock);
-          blankBlocks.remove(blankBlock);
-          break;
+
+    for (int i = 0; i < length; i++) {
+      for (int j = 0; j < length; j++) {
+        if (game_board[i][j] == 0) {
+          ArrayList<int[]> shape = getShape(game_board, i, j, 0);
+
+          for (int k = 0; k < puzzles.size(); k++) {
+            if (isSamePuzzle(puzzles.get(k), shape)) {
+              answer += shape.size();
+              puzzles.remove(k);
+              break;
+            }
+          }
         }
       }
     }
@@ -52,98 +43,88 @@ public class s84021 {
     return answer;
   }
 
-  private static int countItems(boolean[][] block) {
-    int count = 0;
-    for (int i = 0; i < block.length; i++) {
-      for (int j = 0; j < block[0].length; j++) {
-        count += block[i][j] ? 1 : 0;
-      }
+  private static boolean isSamePuzzle(ArrayList<int[]> puzzle, ArrayList<int[]> shape) {
+    if (puzzle.size() != shape.size()) {
+      return false;
     }
-    return count;
-  }
+    for (int t = 0; t < 4; t++) {
+      if (t != 0) {
+        turnRight(puzzle);
+      }
 
-  private static boolean isCorrectBlock(boolean[][] insertBlock, boolean[][] blankBlock) {
-    //1. 비교
-    for (int d = 0; d < 4; d++) {
-      if (isSameBlock(insertBlock, blankBlock)) {
+      if (isSameShape(puzzle, shape)) {
         return true;
       }
-
-      //2. 회전
-      insertBlock = turnRight(insertBlock);
     }
     return false;
   }
 
-  private static boolean[][] turnRight(boolean[][] block) {
-    int maxRow = block.length - 1;
-    int maxCol = block[0].length - 1;
-
-    boolean[][] result = new boolean[block[0].length][block.length];
-
-    for (int i = 0; i <= maxRow; i++) {
-      for (int j = 0; j <= maxCol; j++) {
-        result[j][maxRow - i] = block[i][j];
+  private static boolean isSameShape(ArrayList<int[]> puzzle, ArrayList<int[]> shape) {
+    for (int i = 0; i < shape.size(); i++) {
+      if (puzzle.get(i)[0] != shape.get(i)[0] || puzzle.get(i)[1] != shape.get(i)[1]) {
+        return false;
       }
     }
-
-    return result;
-  }
-
-  private static boolean isSameBlock(boolean[][] insertBlock, boolean[][] blankBlock) {
-    if (insertBlock.length != blankBlock.length
-        || insertBlock[0].length != blankBlock[0].length) {
-      return false;
-    }
-
-    for (int i = 0; i < insertBlock.length; i++) {
-      for (int j = 0; j < insertBlock[0].length; j++) {
-        if (insertBlock[i][j] != blankBlock[i][j]) {
-          return false;
-        }
-      }
-    }
-
     return true;
   }
 
-  private static boolean[][] createBlock(boolean[][] table, int row, int col) {
-    ArrayList<int[]> nodes = new ArrayList<>();
-    Queue<int[]> queue = new ArrayDeque<>();
-    boolean[][] visited = new boolean[length][length];
-    int maxRow = row, minRow = row, maxCol = col, minCol = col;
+  private static ArrayList<int[]> turnRight(ArrayList<int[]> puzzle) {
 
-    visited[row][col] = true;
-    queue.add(new int[]{row, col});
-    nodes.add(new int[]{row, col});
+    puzzle.sort((o1, o2) -> {
+      if (o1[1] == o2[1]) {
+        return o2[0] - o1[0];
+      }
+      return o1[1] - o2[1];
+    });
+
+    int sr = puzzle.get(0)[0];
+    int sc = puzzle.get(0)[1];
+    puzzle.get(0)[0] = 0;
+    puzzle.get(0)[1] = 0;
+
+    for (int i = 1; i < puzzle.size(); i++) {
+      int br = puzzle.get(i)[0] - sr;
+      int bc = puzzle.get(i)[1] - sc;
+      puzzle.get(i)[0] = bc;
+      puzzle.get(i)[1] = -br;
+    }
+
+    return puzzle;
+  }
+
+
+  private static ArrayList<int[]> getShape(int[][] game_board, int sr, int sc, int n) {
+    int tmp = (n + 1) % 2;
+    ArrayList<int[]> shape = new ArrayList<>();
+
+    Queue<int[]> queue = new LinkedList<>();
+
+    queue.add(new int[]{sr, sc});
+    shape.add(new int[]{sr - sr, sc - sc});
+    game_board[sr][sc] = tmp;
 
     while (!queue.isEmpty()) {
       int[] now = queue.poll();
 
-      for (int i = 0; i < 4; i++) {
-        int nr = now[0] + direct[i][0];
-        int nc = now[1] + direct[i][1];
+      for (int d = 0; d < dir.length; d++) {
+        int nr = now[0] + dir[d][0];
+        int nc = now[1] + dir[d][1];
 
-        if (isPossible(nr, nc) && !visited[nr][nc] && table[nr][nc]) {
-          maxRow = Math.max(maxRow, nr);
-          minRow = Math.min(minRow, nr);
-          maxCol = Math.max(maxCol, nc);
-          minCol = Math.min(minCol, nc);
-
+        if (isPossible(nr, nc) && game_board[nr][nc] == n) {
           queue.add(new int[]{nr, nc});
-          visited[nr][nc] = true;
-          nodes.add(new int[]{nr, nc});
+          shape.add(new int[]{nr - sr, nc - sc});
+          game_board[nr][nc] = tmp;
         }
       }
     }
 
-    boolean[][] result = new boolean[maxRow - minRow + 1][maxCol - minCol + 1];
-    for (int[] node : nodes) {
-      result[node[0] - minRow][node[1] - minCol] = true;
-      table[node[0]][node[1]] = false;
-    }
-
-    return result;
+    shape.sort((o1, o2) -> {
+      if (o1[0] == o2[0]) {
+        return o1[1] - o2[1];
+      }
+      return o1[0] - o2[0];
+    });
+    return shape;
   }
 
   private static boolean isPossible(int nx, int ny) {
