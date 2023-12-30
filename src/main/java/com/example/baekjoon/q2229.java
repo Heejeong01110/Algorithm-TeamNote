@@ -25,10 +25,10 @@ public class q2229 {
     BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
     N = Integer.parseInt(br.readLine());
-    inp = new int[N];
+    inp = new int[N + 1];
 
     StringTokenizer st = new StringTokenizer(br.readLine());
-    for (int i = 0; i < N; i++) {
+    for (int i = 1; i <= N; i++) {
       inp[i] = Integer.parseInt(st.nextToken());
     }
 
@@ -37,43 +37,18 @@ public class q2229 {
 
   private static int Solution() {
 
-    scores = new int[N][N][2];
-    for (int i = 0; i < N; i++) {
+    int[] dp = new int[N + 1];
+
+    for (int i = 1; i <= N; i++) {
       int min = inp[i];
       int max = inp[i];
-      for (int j = i + 1; j < N; j++) {
-        scores[i][j][0] = min = Math.min(min, inp[j]);
-        scores[i][j][1] = max = Math.max(max, inp[j]);
+      for (int j = i; j > 0; j--) {
+        min = Math.min(min, inp[j]);
+        max = Math.max(max, inp[j]);
+        dp[i] = Math.max(dp[i], max - min + dp[j - 1]);
       }
     }
-
-    dp = new int[N][N]; // [i] 부터 [j]까지 점수의 최대값
-    for (int i = 0; i < N; i++) {
-      for (int j = 0; j < N; j++) {
-        dp[i][j] = -1;
-        if (i == j) {
-          dp[i][j] = 0;
-        }
-      }
-    }
-
-    return dp(0, N - 1);
-  }
-
-  private static int dp(int start, int end) {
-    if (dp[start][end] != -1) {
-      return dp[start][end];
-    }
-
-    int res = scores[start][end][1] - scores[start][end][0];
-    for (int i = start; i < end; i++) {
-      int dp1 = dp(start, i);
-      int dp2 = dp(i + 1, end);
-      res = Math.max(res, dp1 + dp2);
-    }
-
-    dp[start][end] = res;
-    return dp[start][end];
+    return dp[N];
   }
 
 }
