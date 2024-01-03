@@ -26,7 +26,7 @@ public class q1947 {
 
   private static long Solution() {
 
-    long[] dp = new long[N + 1];
+    long[] dp = new long[Math.max(3, N + 1)];
 
     dp[2] = 1;
     dp[3] = 2;
