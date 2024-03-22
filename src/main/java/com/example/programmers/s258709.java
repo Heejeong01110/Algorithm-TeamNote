@@ -4,11 +4,11 @@ import java.util.HashMap;
 
 public class s258709 {
 
-  static int n;
-  static double maxPer;
-  static int maxIdx;
-  static double[] checked;
-  static HashMap<Integer, Integer>[] dices;
+  private static int n;
+  private static double maxPer;
+  private static int maxIdx;
+  private static double[] checked;
+  private static HashMap<Integer, Integer>[] dices;
 
   public static int[] solution(int[][] dice) {
     n = dice.length;
@@ -42,7 +42,7 @@ public class s258709 {
     return res;
   }
 
-  public static void comb(int n, int c, int now, int depth, int[] list) {
+  private static void comb(int n, int c, int now, int depth, int[] list) {
     if (depth == c) {
       //조합 완성
       int idx = toBinary(list);
@@ -112,7 +112,7 @@ public class s258709 {
     return res;
   }
 
-  static int toBinary(int[] list) {
+  private static int toBinary(int[] list) {
     int res = 0;
     for (int num : list) {
       res += Math.pow(2, num);
@@ -120,7 +120,7 @@ public class s258709 {
     return res;
   }
 
-  static int[] toRev(int[] list) {
+  private static int[] toRev(int[] list) {
     int[] res = new int[list.length];
     boolean[] visited = new boolean[n];
     for (int i = 0; i < n / 2; i++) {
