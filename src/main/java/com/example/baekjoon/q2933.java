@@ -26,11 +26,11 @@ public class q2933 {
   }
 
   private static void print(char[][] map) {
-    for (int i = 1; i <= R; i++) {
+    for (int i = R; i >= 1; i--) {
       for (int j = 1; j <= C; j++) {
         System.out.print(map[i][j]);
       }
-      System.out.println("");
+      System.out.print("\n");
     }
   }
 
@@ -45,7 +45,7 @@ public class q2933 {
     for (int i = R; i >= 1; i--) {
       String str = br.readLine();
       for (int j = 1; j <= C; j++) {
-        map[i] = str.toCharArray();
+        map[i][j] = str.charAt(j - 1);
       }
     }
 
@@ -77,7 +77,7 @@ public class q2933 {
     int d = direct ? 1 : -1;
     for (int i = 1; i <= C; i++) {
       int c = s + d * i;
-      if (map[stick][c] == 'X') {
+      if (map[stick][c] == 'x') {
         map[stick][c] = '.';
         return c;
       }
@@ -91,7 +91,7 @@ public class q2933 {
       int nr = row + dir[d][0];
       int nc = col + dir[d][1];
 
-      if (isPossible(nr, nc) && map[nr][nc] == 'X') {
+      if (isPossible(nr, nc) && map[nr][nc] == 'x') {
         //2. 클러스터의 가장 바닥 높이 구하기 ex> 100 100 100 100 2 4 4 4 2 100
         Result result = getRowHeights(nr, nc);
 
@@ -108,7 +108,7 @@ public class q2933 {
           map[loc[0]][loc[1]] = '.';
         }
         for (int[] loc : result.locations) {
-          map[loc[0] - min][loc[1]] = 'X';
+          map[loc[0] - min][loc[1]] = 'x';
         }
 
       }
@@ -122,17 +122,19 @@ public class q2933 {
     ArrayList<int[]> locations = new ArrayList<>();
     boolean success = true;
 
-    Arrays.fill(rowHeights, R);
+    Arrays.fill(rowHeights, R + 1);
     boolean[][] visited = new boolean[R + 1][C + 1];
     Queue<int[]> queue = new LinkedList<>();
 
+    rowHeights[col] = Math.min(rowHeights[row], row);
     queue.add(new int[]{row, col});
     visited[row][col] = true;
+    locations.add(new int[]{row, col});
 
     while (!queue.isEmpty()) {
       int[] now = queue.poll();
 
-      if (now[1] == 1) {
+      if (now[0] == 1) {
         success = false;
         break; //땅에 닿아있음
       }
@@ -141,7 +143,7 @@ public class q2933 {
         int nr = now[0] + dir[d][0];
         int nc = now[1] + dir[d][1];
 
-        if (isPossible(nr, nc) && map[nr][nc] == 'X' && !visited[nr][nc]) {
+        if (isPossible(nr, nc) && map[nr][nc] == 'x' && !visited[nr][nc]) {
           rowHeights[nc] = Math.min(rowHeights[nc], nr);
           queue.add(new int[]{nr, nc});
           visited[nr][nc] = true;
@@ -154,11 +156,12 @@ public class q2933 {
   }
 
   private static int getMinHeight(int[] rowHeights) {
-    int min = R;
+    int min = R + 1;
     for (int i = 1; i <= C; i++) {
       for (int j = rowHeights[i] - 1; j >= 0; j--) {
-        if (map[j][i] == 'X' || j == 0) {
-          min = Math.min(min, (rowHeights[i] - j + 1));
+        if (map[j][i] == 'x' || j == 0) {
+          min = Math.min(min, (rowHeights[i] - (j + 1)));
+          break;
         }
       }
     }
