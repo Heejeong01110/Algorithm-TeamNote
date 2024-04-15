@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.StringTokenizer;
@@ -73,7 +72,7 @@ public class q2933 {
   }
 
   private static int throwStick(int stick, boolean direct) {
-    int s = direct ? 0 : C;
+    int s = direct ? 0 : C + 1;
     int d = direct ? 1 : -1;
     for (int i = 1; i <= C; i++) {
       int c = s + d * i;
@@ -92,23 +91,13 @@ public class q2933 {
       int nc = col + dir[d][1];
 
       if (isPossible(nr, nc) && map[nr][nc] == 'x') {
-        //2. 클러스터의 가장 바닥 높이 구하기 ex> 100 100 100 100 2 4 4 4 2 100
+        //2. 클러스터 내 미네랄들 위치정보 구하기
         Result result = getRowHeights(nr, nc);
 
-        if (!result.success) {
-          continue;
-        }
-
-        //3. 바닥 또는 다른 미네랄과 닿을 때 까지 높이 내리기
-        //3-1. 각 행의 땅 또는 미네랄과의 거리의 최소값 구하기
-        int min = getMinHeight(result.rowHeights);
-
-        //3-2. 높이만큼 내리기
-        for (int[] loc : result.locations) {
-          map[loc[0]][loc[1]] = '.';
-        }
-        for (int[] loc : result.locations) {
-          map[loc[0] - min][loc[1]] = 'x';
+        if (result.success) { //땅에 닿아있지 않을 경우
+          //3. 높이 내리기
+          setHeight(result.locations);
+          break;
         }
 
       }
@@ -116,17 +105,38 @@ public class q2933 {
 
   }
 
+  private static void setHeight(ArrayList<int[]> locations) {
+    //1. 연산을 위해 지도에서 locations 위치의 미네랄 모두 지우기
+    for (int[] loc : locations) {
+      map[loc[0]][loc[1]] = '.';
+    }
+    //2. 한칸씩 내려가며 옮길 수 있는지 확인
+    int h = 1;
+    Loop:
+    while (h < R) {
+      for (int[] loc : locations) {
+        if (map[loc[0] - h][loc[1]] == 'x' || loc[0] - h == 0) {
+          h -= 1;
+          break Loop;
+        }
+      }
+      h++;
+    }
+
+    //3. 확인 후 해당 높이로 미네랄 넣기
+    for (int[] loc : locations) {
+      map[loc[0] - h][loc[1]] = 'x';
+    }
+  }
+
 
   private static Result getRowHeights(int row, int col) {
-    int[] rowHeights = new int[C + 1];
     ArrayList<int[]> locations = new ArrayList<>();
     boolean success = true;
 
-    Arrays.fill(rowHeights, R + 1);
     boolean[][] visited = new boolean[R + 1][C + 1];
     Queue<int[]> queue = new LinkedList<>();
 
-    rowHeights[col] = Math.min(rowHeights[row], row);
     queue.add(new int[]{row, col});
     visited[row][col] = true;
     locations.add(new int[]{row, col});
@@ -144,29 +154,16 @@ public class q2933 {
         int nc = now[1] + dir[d][1];
 
         if (isPossible(nr, nc) && map[nr][nc] == 'x' && !visited[nr][nc]) {
-          rowHeights[nc] = Math.min(rowHeights[nc], nr);
           queue.add(new int[]{nr, nc});
           visited[nr][nc] = true;
           locations.add(new int[]{nr, nc});
         }
       }
     }
-    return new Result(locations, rowHeights, success);
+    return new Result(locations, success);
 
   }
 
-  private static int getMinHeight(int[] rowHeights) {
-    int min = R + 1;
-    for (int i = 1; i <= C; i++) {
-      for (int j = rowHeights[i] - 1; j >= 0; j--) {
-        if (map[j][i] == 'x' || j == 0) {
-          min = Math.min(min, (rowHeights[i] - (j + 1)));
-          break;
-        }
-      }
-    }
-    return min;
-  }
 
   private static boolean isPossible(int r, int c) {
     return r >= 1 && r <= R && c >= 1 && c <= C;
@@ -175,12 +172,10 @@ public class q2933 {
   private static class Result {
 
     ArrayList<int[]> locations;
-    int[] rowHeights;
     boolean success;
 
-    public Result(ArrayList<int[]> locations, int[] rowHeights, boolean success) {
+    public Result(ArrayList<int[]> locations, boolean success) {
       this.locations = locations;
-      this.rowHeights = rowHeights;
       this.success = success;
     }
   }
