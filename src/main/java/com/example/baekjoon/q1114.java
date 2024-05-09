@@ -63,15 +63,21 @@ public class q1114 {
 
     System.out.print(start + " ");
     int sum = 0;
+    int cnt = 0;
     for (int i = part.size() - 1; i >= 0; i--) {
       if (sum + part.get(i) <= mid) {
         sum += part.get(i);
       } else {
+        cnt++;
         sum = part.get(i);
       }
     }
 
-    System.out.print(sum);
+    if (cnt < C) {
+      System.out.print(part.get(0));
+    }else{
+      System.out.print(sum);
+    }
   }
 
   private static boolean isPossible(ArrayList<Integer> part, int max) {
