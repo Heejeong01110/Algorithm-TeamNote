@@ -9,7 +9,7 @@ import java.util.Deque;
 
 public class q16890 {
 
-  private static char[] A, B;
+  private static char[] inpA, inpB;
 
   public static void main(String[] args) throws IOException {
     run();
@@ -23,54 +23,57 @@ public class q16890 {
   private static void inputData() throws IOException {
     BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
-    A = br.readLine().toCharArray();
-    B = br.readLine().toCharArray();
+    inpA = br.readLine().toCharArray();
+    inpB = br.readLine().toCharArray();
 
     br.close();
   }
 
   private static void Solution() {
 
-    Deque<Character> listA = new ArrayDeque<>();
-    Deque<Character> listB = new ArrayDeque<>();
-    int N = A.length;
+    Deque<Character> A = new ArrayDeque<>();
+    Deque<Character> B = new ArrayDeque<>();
+    int N = inpA.length;
 
-    Arrays.sort(A);
-    Arrays.sort(B);
+    Arrays.sort(inpA);
+    Arrays.sort(inpB);
 
     for (int i = 0; i < N; i++) {
-      listA.add(A[i]);
-      listB.add(B[i]);
+      A.add(inpA[i]);
+      B.add(inpB[N - 1 - i]);
     }
 
-    Character[] ans = new Character[N];
-    int startIdx = 0;
-    int lastIdx = N - 1;
+    for (int i = 0; i < (N + 1) / 2; i++) {
+      A.addLast(inpA[i]);
+    }
+
+    for (int i = 0; i < N / 2; i++) {
+      B.addLast(inpA[N - 1 - i]);
+    }
+
+    String front = "";
+    String back = "";
+
     for (int i = 0; i < N; i++) {
-      if (lastIdx < startIdx) {
-        break;
-      }
-      if (i % 2 == 0) {
-        //listA
-        if (listA.peekFirst().compareTo(listB.peekLast()) <= 0 || startIdx == lastIdx) {
-          ans[startIdx++] = listA.pollFirst();
+      if (i % 2 == 0) { //구사과
+        if (B.isEmpty() || A.peekFirst() < B.peekFirst()) {
+          front += A.pollFirst();
         } else {
-          ans[lastIdx--] = listA.pollLast();
+          back += A.pollLast();
         }
-      } else {
-        //listB
-        if (listB.peekLast().compareTo(listA.peekFirst()) >= 0 || startIdx == lastIdx) {
-          ans[startIdx++] = listB.pollLast();
+      } else { //큐브러버
+        if (A.isEmpty() || A.peekFirst() < B.peekFirst()) {
+          front += B.pollFirst();
         } else {
-          ans[lastIdx--] = listB.pollFirst();
+          back += B.pollLast();
         }
       }
     }
 
-    for (int i = 0; i < N; i++) {
-      System.out.printf(String.valueOf(ans[i]));
+    System.out.printf(front);
+    for (int i = back.length(); i > 0; i--) {
+      System.out.printf(back.substring(i - 1, i));
     }
-    return;
   }
 
 }
