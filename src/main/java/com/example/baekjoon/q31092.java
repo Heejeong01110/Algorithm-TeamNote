@@ -51,28 +51,31 @@ public class q31092 {
 
   private static int Solution() {
     int min = Integer.MAX_VALUE;
-    for (int i = 0; i < boardLen - strLen; i++) { //전체 탐색
+    int[] alp = new int[26]; //알파벳 별 남아있는 수
+    for (int i = 0; i < boardLen; i++) {
+      alp[nodes[boardNums[i]].alp.charAt(0) - 'a'] += 1;
+    }
+
+    for (int i = 0; i < boardLen - strLen + 1; i++) { //전체 탐색
+
       //1. 문자열 일치하는부분/아닌부분 분리
-      int[] stickers = new int[strLen]; //0:불일치 1:스티커 뗀 자리 2:일치
-      int[] alp = new int[26]; //알파벳 별 남아있는 수
+      boolean[] stickers = new boolean[boardLen]; // 원래 자리와 일치, 불일치
 
       for (int j = 0; j < strLen; j++) {
-
-        if (nodes[boardNums[i + j]].alp.equals(str.substring(j, j + 1))) {
-          stickers[j] = 2;
-        } else {
-          alp[str.charAt(j) - 'a'] += 1;
+        if (i + j < boardLen && nodes[boardNums[i + j]].alp.equals(str.substring(j, j + 1))) {
+          stickers[i + j] = true;
         }
       }
 
       //2. 아닌부분들 중에서 가지고있는것, 사는것 가격비교해서 붙이기
       int cost = 0;
+      int[] isChanged = new int[boardLen];//0:그대로 1:스티커 뗀 자리 2:사용
       for (int j = 0; j < strLen; j++) {
         if (cost > min) {
           break;
         }
 
-        if (stickers[j] == 2) {
+        if (stickers[i + j]) {
           continue;
         }
 
@@ -80,20 +83,35 @@ public class q31092 {
         //changeCost
         int nodeNum = getNodeNum(str.substring(j, j + 1), nodes);
         if (nodeNum == -1) {
+          cost = Integer.MAX_VALUE;
           break;
         }
+        int idx = -1;
         if (alp[nodes[nodeNum].alp.charAt(0) - 'a'] > 0) { //바꿀 알파벳이 남아있을 경우
           //그 중에서 가장 교체 비용이 적은 위치 찾기
-          //1. 
+          //1. 검사중인 문자열 중에서 이미 일치하는 문자와는 교체하면 안됨
+          //2. 이미 한번 교환한 문자는 다시 사용하지 않도록 해야함.
+          //3. 교환시 원래 있던 스티커를 따로 체크해둬야함.
           for (int k = 0; k < boardLen; k++) {
-            if (nodes[boardNums[k]].alp.equals(nodes[nodeNum].alp)) {
-              minCost = Math.min(minCost, nodes[boardNums[k]].delCost);
+            if (!stickers[k] && isChanged[k] != 2
+                && nodes[boardNums[k]].alp.equals(nodes[nodeNum].alp)
+                && minCost > nodes[boardNums[k]].delCost) {
+              minCost = nodes[boardNums[k]].delCost;
+              idx = k;
             }
           }
         }
         // buyCost
-        minCost = Math.min(minCost, nodes[nodeNum].buyCost);
-        cost += minCost + nodes[nodeNum].delCost;
+        if (minCost > nodes[nodeNum].buyCost) {
+          minCost = nodes[nodeNum].buyCost;
+        } else if (idx != -1) {
+          isChanged[idx] = 2;
+        }
+        if (isChanged[i + j] == 0) {
+          isChanged[i + j] = 1;
+          minCost += nodes[i + j].delCost;
+        }
+        cost += minCost;
       }
       min = Math.min(min, cost);
     }
