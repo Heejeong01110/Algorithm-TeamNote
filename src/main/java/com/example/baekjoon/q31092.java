@@ -3,6 +3,8 @@ package com.example.baekjoon;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.StringTokenizer;
 
 public class q31092 {
@@ -50,64 +52,73 @@ public class q31092 {
 
   private static int Solution() {
     int minCost = Integer.MAX_VALUE;
-    for (int i = 0; i <= boardLen - strLen; i++) {
-      //1. 문자열 일치하는부분/아닌부분 분리
-      boolean[] stickers = new boolean[boardLen]; // 원래 자리와 일치, 불일치
+
+    for (int i = 0; i < strLen; i++) {
+      if (getNodeNum(str.substring(i, i + 1)) == -1) {
+        return -1;
+      }
+    }
+
+    for (int n = 0; n <= boardLen - strLen; n++) {
       int currentCost = 0;
-      int[] isChanged = new int[boardLen]; //0:그대로 1:스티커 뗀 자리 2:사용
-      for (int j = 0; j < strLen; j++) {
-        if (i + j < boardLen && nodes[boardNums[i + j]].alp.equals(str.substring(j, j + 1))) {
-          stickers[i + j] = true;
+      List<String> attach = new ArrayList<>();
+      int[] state = new int[boardLen]; //0:사용X 1:사용O 2:일치
+      for (int i = 0; i < strLen; i++) { //일치하지 않는 스티커 모두 제거
+        String now = nodes[boardNums[n + i]].alp;
+        if (str.substring(i, i + 1).equals(now)) {
+          state[n + i] = 2;
+        } else {
+          attach.add(now);
+          currentCost += nodes[boardNums[n + i]].delCost;
         }
       }
 
-      //2. 아닌부분들 중에서 가지고있는것, 사는것 가격비교해서 붙이기
-      for (int j = 0; j < strLen; j++) {
-        int sumCost = Integer.MAX_VALUE;
-        int nodeNum = getNodeNum(str.substring(j, j + 1));
-        int idx = -1;
-
-        if (currentCost > minCost) {
-          break;
-        }
-        if (nodeNum == -1) {
-          currentCost = Integer.MAX_VALUE;
-          break;
-        }
-        if (stickers[i + j]) {
-          continue;
-        }
-
-        //changeCost
-        for (int k = 0; k < boardLen; k++) {
-          if (!stickers[k] && isChanged[k] != 2
-              && nodes[boardNums[k]].alp.equals(nodes[nodeNum].alp)
-              && sumCost > nodes[boardNums[k]].delCost) {
-            sumCost = nodes[boardNums[k]].delCost;
-            idx = k;
+      for (int i = 0; i < strLen; i++) { //빈자리 채우기
+        if (state[n + i] != 2) {
+          //1번과 2번 방법중 선택해야함.
+          String now = str.substring(i, i + 1);
+          if (attach.contains(now)) { //제거한 스티커 중 있는지
+            attach.remove(now);
+            state[n + i] = 2;
+            continue;
           }
-        }
 
-        // buyCost
-        if (sumCost > nodes[nodeNum].buyCost) {
-          sumCost = nodes[nodeNum].buyCost;
-        } else if (idx != -1) {
-          isChanged[idx] = 2;
+          int delCost = Integer.MAX_VALUE;
+          int idx = -1;
+          for (int j = 0; j < boardLen; j++) { //제거안한 스티커중 있는지
+            if (j >= n && j < n + strLen) {
+              continue;
+            }
+
+            if (now.equals(nodes[boardNums[j]].alp)
+                && state[j] == 0) {
+              delCost = nodes[boardNums[j]].delCost;
+              idx = j;
+              break;
+            }
+          }
+
+          //새로 구매
+          int nodeNum = getNodeNum(now);
+          state[n + i] = 2;
+          if (delCost < nodes[nodeNum].buyCost) {
+            state[idx] = 1;
+            currentCost += delCost;
+          } else {
+            currentCost += nodes[nodeNum].buyCost;
+          }
+
         }
-        if (isChanged[i + j] == 0) {
-          isChanged[i + j] = 1;
-          sumCost += nodes[i + j].delCost;
-        }
-        currentCost += sumCost;
       }
-      minCost = Math.min(minCost, currentCost);
+
+      if (minCost > currentCost) {
+        minCost = currentCost;
+      }
+
+
     }
 
-    if (minCost == Integer.MAX_VALUE) {
-      return -1;
-    }
-
-    return minCost;
+    return minCost == Integer.MAX_VALUE ? -1 : minCost;
   }
 
   private static int getNodeNum(String find) {
@@ -136,8 +147,3 @@ public class q31092 {
   }
 
 }
-
-//그 중에서 가장 교체 비용이 적은 위치 찾기
-//1. 검사중인 문자열 중에서 이미 일치하는 문자와는 교체하면 안됨
-//2. 이미 한번 교환한 문자는 다시 사용하지 않도록 해야함.
-//3. 교환시 원래 있던 스티커를 따로 체크해둬야함.

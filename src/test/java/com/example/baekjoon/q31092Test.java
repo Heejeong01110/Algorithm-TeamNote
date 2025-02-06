@@ -36,23 +36,35 @@ class q31092Test {
 
   @Test
   void main() throws IOException {
-//    testCorrect("5 5 3\n"
-//        + "w 3 1\n"
-//        + "a 2 2\n"
-//        + "p 1 3\n"
-//        + "a 2 2\n"
-//        + "s 3 1\n"
-//        + "1 2 3 4 5\n"
-//        + "aaa\n", "3");
-//    testCorrect("3 6 3\n"
-//        + "b 1 2\n"
-//        + "o 2 3\n"
-//        + "j 3 4\n"
-//        + "b 4 5\n"
-//        + "o 5 6\n"
-//        + "j 6 7\n"
-//        + "1 5 3\n"
-//        + "boj\n", "0");
+    testCorrect("10 3 3\n"
+        + "a 1 100\n"
+        + "b 100 20\n"
+        + "c 3 30\n"
+        + "3 3 3 2 1 2 1 2 1 2\n"
+        + "aaa\n", "12");
+    testCorrect("10 3 4\n"
+        + "a 1 100\n"
+        + "b 100 20\n"
+        + "c 3 30\n"
+        + "3 3 3 2 1 2 1 2 1 2\n"
+        + "aaaa\n", "208");
+    testCorrect("5 5 3\n"
+        + "w 3 1\n"
+        + "a 2 2\n"
+        + "p 1 3\n"
+        + "a 2 2\n"
+        + "s 3 1\n"
+        + "1 2 3 4 5\n"
+        + "aaa\n", "3");
+    testCorrect("3 6 3\n"
+        + "b 1 2\n"
+        + "o 2 3\n"
+        + "j 3 4\n"
+        + "b 4 5\n"
+        + "o 5 6\n"
+        + "j 6 7\n"
+        + "1 5 3\n"
+        + "boj\n", "0");
     testCorrect("3 4 3\n"
         + "g 1 1\n"
         + "o 2 2\n"
