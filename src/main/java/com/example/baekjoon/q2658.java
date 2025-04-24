@@ -62,6 +62,14 @@ public class q2658 {
       return "0";
     }
 
+    for (int i = 0; i < N; i++) {
+      for (int j = 0; j < N; j++) {
+        if (!res.visited[i][j] && inp[i][j] == 1) {
+          return "0";
+        }
+      }
+    }
+
     res.vertexes.sort((a, b) -> {
       if (a[0] == b[0]) {
         return a[1] - b[1];
