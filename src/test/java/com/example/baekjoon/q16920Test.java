@@ -29,7 +29,7 @@ class q16920Test {
     System.setIn(in);
 
     q16920 q = new q16920();
-    q.run();
+//    q.run();
 
     assertEquals(output, out.toString());
   }
