@@ -3,11 +3,14 @@ package com.example.baekjoon;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Collections;
 
 public class q1038 {
 
   private static int N;
   private static long[] memo;
+  private static ArrayList<Long> list;
 
   public static void main(String[] args) throws IOException {
     run();
@@ -26,40 +29,29 @@ public class q1038 {
   }
 
   private static long Solution() {
-    if (N < 10) {
+    list = new ArrayList<>();
+
+    if (N <= 10) {
       return N;
-    }
-
-    for (int a = 0; a <= 9; a++) {
-      memo[a] = a;
-    }
-
-    int start = 0;
-    int end = 10;
-    while (end <= N) {
-      int cnt = 0;
-
-      for (int i = start; i < end; i++) {
-        for (int j = 0; j <= 9; j++) {
-          if (memo[i] % 10 <= j) {
-            break;
-          }
-          long num = memo[i] * 10 + j;
-          memo[end + cnt] = num;
-          if (end + cnt == N) {
-            return memo[end + cnt];
-          }
-          cnt++;
-        }
+    } else if (N > 1022) {
+      return -1;
+    } else {
+      for (int i = 0; i < 10; i++) {
+        dfs(i, 1);
       }
-      if (cnt == 0) {
-        return -1;
-      }
-      start = end + 1;
-      end += cnt;
+      Collections.sort(list);
+      return list.get(N);
     }
-
-    return -1;
   }
 
+  public static void dfs(long num, int idx) {
+    if (idx > 10) {
+      return;
+    }
+
+    list.add(num);
+    for (int i = 0; i < num % 10; i++) {
+      dfs((num * 10) + i, idx + 1);
+    }
+  }
 }
