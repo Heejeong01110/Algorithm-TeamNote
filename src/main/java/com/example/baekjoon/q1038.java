@@ -21,7 +21,7 @@ public class q1038 {
   private static void inputData() throws IOException {
     BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
     N = Integer.parseInt(br.readLine());
-    memo = new long[N + 1];
+    memo = new long[1024];
     br.close();
   }
 
@@ -39,7 +39,7 @@ public class q1038 {
     while (end <= N) {
       int cnt = 0;
 
-      for (int i = start; i <= end; i++) {
+      for (int i = start; i < end; i++) {
         for (int j = 0; j <= 9; j++) {
           if (memo[i] % 10 <= j) {
             break;
