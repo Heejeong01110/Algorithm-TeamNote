@@ -3,7 +3,6 @@ package com.example.baekjoon;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.Arrays;
 import java.util.StringTokenizer;
 
 public class q25196 {
@@ -36,37 +35,32 @@ public class q25196 {
   }
 
   private static long Solution() {
-    Arrays.sort(inp, (o1, o2) -> {
-      if (o1[0] == o2[0]) {
-        return o2[1] - o1[1];
-      }
-      return o2[0] - o1[0];
-    });
 
-    long len = ((long) inp[0][0]) * inp[1][0] * inp[2][0];
-    for (long i = 0; i <= len; i++) {
-      long[] nums = new long[3];
-      for (int j = 0; j < 3; j++) {
-        nums[j] = i % inp[j][0];
-      }
-
-      if (inp[0][1] <= nums[0] && nums[0] <= inp[0][2] && inp[1][1] <= nums[1]
-          && nums[1] <= inp[1][2]
-          && inp[2][1] <= nums[2] && nums[2] <= inp[2][2]) {
-        return i;
-      }
-
-      long plus = 0;
-      for (int j = 0; j < 3; j++) {
-        if (nums[j] < inp[j][1]) {
-          plus = Math.max(plus, inp[j][1] - nums[j]);
-        } else if (nums[j] > inp[j][2]) {
-          plus = Math.max(plus, inp[j][0] + inp[j][1] - nums[j]);
-        }
-      }
-      i += (plus - 1);
+    long[][] memo = new long[3][2];
+    for (int i = 0; i < memo.length; i++) {
+      memo[i][0] = inp[i][1];
+      memo[i][1] = inp[i][2];
     }
 
+    long len = ((long) inp[0][0]) * inp[1][0] * inp[2][0];
+    while (memo[0][1] <= len && memo[1][1] <= len && memo[2][1] <= len) {
+      long s = Math.max(memo[0][0], Math.max(memo[1][0], memo[2][0]));
+      long e = Math.min(memo[0][1], Math.min(memo[1][1], memo[2][1]));
+      if (s <= e) {
+        return s;
+      }
+
+      if (memo[0][1] <= memo[1][1] && memo[0][1] <= memo[2][1]) {
+        memo[0][0] += inp[0][0];
+        memo[0][1] += inp[0][0];
+      } else if (memo[1][1] <= memo[0][1] && memo[1][1] <= memo[2][1]) {
+        memo[1][0] += inp[1][0];
+        memo[1][1] += inp[1][0];
+      } else {
+        memo[2][0] += inp[2][0];
+        memo[2][1] += inp[2][0];
+      }
+    }
     return -1;
   }
 
