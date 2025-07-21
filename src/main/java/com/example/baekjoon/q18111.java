@@ -73,22 +73,12 @@ public class q18111 {
         if (map[i][j] > h) {
           time += (map[i][j] - h) * REMOVE;
           block += (map[i][j] - h);
-        }
-      }
-    }
-
-    for (int i = 0; i < N; i++) {
-      for (int j = 0; j < M; j++) {
-        if (map[i][j] < h) {
-          if (h - map[i][j] > block) {
-            return Integer.MAX_VALUE;
-          }
+        } else if (map[i][j] < h) {
           time += (h - map[i][j]) * BUILD;
           block -= (h - map[i][j]);
         }
       }
     }
-
     return time;
   }
 
