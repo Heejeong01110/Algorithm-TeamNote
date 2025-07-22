@@ -8,6 +8,7 @@ public class q16637 {
 
   private static int N;
   private static String inp;
+  private static long res;
 
   public static void main(String[] args) throws IOException {
     run();
@@ -27,30 +28,30 @@ public class q16637 {
 
   private static long Solution() {
     if (N == 1) {
-      return Long.parseLong(inp.substring(0, 1));
+      return Long.parseLong(inp);
+    }
+    res = Long.MIN_VALUE;
+    dfs(3, calc(getNum(0), inp.charAt(1), getNum(2)), getNum(0), false);
+    return res;
+  }
+
+  private static void dfs(int idx, long nowSum, long preSum, boolean tmp) {
+    if (idx >= N - 1) {
+      res = Math.max(res, nowSum);
+      return;
     }
 
-    long[][] dp = new long[N + 1][2];
-    dp[1][0] = calc(getNum(0), inp.charAt(1), getNum(2));
-    dp[1][1] = dp[1][0];
-    if (N == 3) {
-      return dp[1][0];
+    long ans;
+    //1. 괄호
+    if (!tmp) {//이전 연산에서 괄호를 사용하지 않은 경우
+      //괄호 O
+      ans = calc(preSum, inp.charAt(idx - 2),
+          calc(getNum(idx - 1), inp.charAt(idx), getNum(idx + 1)));
+      dfs(idx + 2, ans, nowSum, true);
     }
-    dp[3][0] = calc(dp[1][0], inp.charAt(3), getNum(4));
-    dp[3][1] = Math.max(dp[3][0],
-        calc(getNum(0), inp.charAt(1), calc(getNum(2), inp.charAt(3), getNum(4))));
-
-    for (int i = 5; i < inp.length(); i += 2) {
-      dp[i][0] = Math.max(
-          calc(dp[i - 2][0], inp.charAt(i), getNum(i + 1)),
-          calc(dp[i - 2][1], inp.charAt(i), getNum(i + 1)));
-      long calc = calc(getNum(i - 1), inp.charAt(i), getNum(i + 1));
-      dp[i][1] = Math.max(
-          calc(dp[i - 4][0], inp.charAt(i - 2), calc),
-          calc(dp[i - 4][1], inp.charAt(i - 2), calc));
-    }
-
-    return Math.max(dp[N - 2][0], dp[N - 2][1]);
+    // 괄호 X
+    ans = calc(nowSum, inp.charAt(idx), getNum(idx + 1));
+    dfs(idx + 2, ans, nowSum, false);
   }
 
   private static long calc(long one, char operator, long two) {
@@ -58,7 +59,6 @@ public class q16637 {
       case '+' -> one + two;
       case '-' -> one - two;
       case '*' -> one * two;
-      case '/' -> one / two;
       default -> 0L;
     };
   }
