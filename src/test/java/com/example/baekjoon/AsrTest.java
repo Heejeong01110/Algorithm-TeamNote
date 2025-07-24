@@ -120,7 +120,10 @@ public abstract class AsrTest {
     Method method = clazz.getMethod("main", String[].class);
     method.invoke(null, (Object) new String[]{});
 
-    assertEquals(expectedOutput, out.toString());
+    assertEquals(
+        expectedOutput.replaceAll("\\r\\n?", "\n").trim(),
+        out.toString().replaceAll("\\r\\n?", "\n").trim()
+    );
   }
 
   static class TestCase {
