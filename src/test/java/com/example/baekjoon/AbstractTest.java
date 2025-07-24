@@ -17,6 +17,23 @@ public abstract class AbstractTest {
   private OutputStream out;
   private InputStream in;
 
+  @BeforeEach
+  void autoSetDefaultClassName() {
+    // 이미 지정되어 있으면 건너뜀 (직접 지정 우선)
+    if (defaultClassName != null) {
+      return;
+    }
+
+    // 현재 실행 중인 테스트 클래스명 얻기
+    String testClassName = this.getClass().getSimpleName();
+
+    // 'Test'로 끝나면 잘라서 설정
+    if (testClassName.endsWith("Test")) {
+      defaultClassName = testClassName.substring(0, testClassName.length() - 4);
+    } else {
+      defaultClassName = testClassName;
+    }
+  }
 
   protected void testCorrect(String input, String expectedOutput) throws Exception {
     if (defaultClassName == null) {
