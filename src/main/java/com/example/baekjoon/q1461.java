@@ -12,10 +12,6 @@ public class q1461 {
   private static int[] inp;
 
   public static void main(String[] args) throws IOException {
-    run();
-  }
-
-  public static void run() throws IOException {
     inputData();
     System.out.print(Solution());
   }

@@ -117,8 +117,8 @@ public abstract class AsrTest {
     System.setIn(in);
 
     Class<?> clazz = Class.forName("com.example.baekjoon." + className);
-    Method method = clazz.getMethod("run");
-    method.invoke(null);
+    Method method = clazz.getMethod("main", String[].class);
+    method.invoke(null, (Object) new String[]{});
 
     assertEquals(expectedOutput, out.toString());
   }
