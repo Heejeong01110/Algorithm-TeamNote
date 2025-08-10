@@ -3,6 +3,7 @@ package com.example.baekjoon;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Arrays;
 import java.util.StringTokenizer;
 
 public class q2230 {
@@ -31,8 +32,25 @@ public class q2230 {
   }
 
   private static int Solution() {
+    Arrays.sort(inp);
+    int l = 0, r = 0;
+    int ans = Integer.MAX_VALUE;
+    while (r < N) {
+      if (inp[r] - inp[l] < M) {
+        r++;
+        continue;
+      }
 
-    return 0;
+      if (inp[r] - inp[l] == M) {
+        ans = M;
+        break;
+      }
+
+      ans = Math.min(ans, inp[r] - inp[l]);
+      l++;
+    }
+    return ans;
   }
+
 
 }
