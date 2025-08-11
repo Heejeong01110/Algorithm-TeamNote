@@ -45,9 +45,9 @@ public class q2805 {
       mid = (start + end) / 2;
       long cal = calc(sumList, mid);
       if (cal < M) {
-        start = mid + 1;
-      } else if (cal > M) {
         end = mid - 1;
+      } else if (cal > M) {
+        start = mid + 1;
       } else {
         res = mid;
         break;
@@ -64,16 +64,16 @@ public class q2805 {
     while (start <= end) {
       mid = (start + end) / 2;
       if (inp[mid] < height) {
-        end = mid - 1;
-      } else if (height < inp[mid]) {
         start = mid + 1;
+      } else if (height < inp[mid]) {
+        end = mid - 1;
       } else {
         idx = mid;
         break;
       }
     }
     if (idx == -1) {
-      idx = mid;
+      idx = mid + 1;
     }
     return (sumList[N] - sumList[idx]) - ((long) (N - idx)) * height;
   }
