@@ -34,48 +34,29 @@ public class q2805 {
 
   private static long Solution() {
     Arrays.sort(inp);
-    long[] sumList = new long[N + 1];
-    for (int i = 1; i <= N; i++) {
-      sumList[i] = sumList[i - 1] + inp[i - 1];
-    }
-
-    long start = 0, end = inp[N - 1], mid = 0, res = 0;
+    long start = 0, end = inp[N - 1], res = 0;
 
     while (start <= end) {
-      mid = (start + end) / 2;
-      long cal = calc(sumList, mid);
+      long mid = (start + end) / 2;
+      long cal = calc(mid);
       if (cal < M) {
         end = mid - 1;
-      } else if (cal > M) {
-        start = mid + 1;
       } else {
+        start = mid + 1;
         res = mid;
-        break;
       }
     }
-
     return res;
   }
 
-  private static long calc(long[] sumList, long height) {
-    int idx = -1;
-    int start = 0, end = N - 1, mid = 0;
-
-    while (start <= end) {
-      mid = (start + end) / 2;
-      if (inp[mid] < height) {
-        start = mid + 1;
-      } else if (height < inp[mid]) {
-        end = mid - 1;
-      } else {
-        idx = mid;
-        break;
+  private static long calc(long height) {
+    long sum = 0;
+    for (int h : inp) {
+      if (h > height) {
+        sum += (h - height);
       }
     }
-    if (idx == -1) {
-      idx = mid + 1;
-    }
-    return (sumList[N] - sumList[idx]) - ((long) (N - idx)) * height;
+    return sum;
   }
 
 }
