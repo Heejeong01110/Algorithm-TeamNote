@@ -3,82 +3,75 @@ package com.example.baekjoon;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
 import java.util.StringTokenizer;
 
 public class q23309 {
 
-  private static ArrayList<Integer> stations;
-  private static boolean[] visited;
-
   public static void main(String[] args) throws IOException {
-
     BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-
     StringTokenizer st = new StringTokenizer(br.readLine());
     int N = Integer.parseInt(st.nextToken());
     int M = Integer.parseInt(st.nextToken());
-    stations = new ArrayList<>();
-    visited = new boolean[1_000_000];
-
     st = new StringTokenizer(br.readLine());
-    for (int i = 0; i < N; i++) {
-      int e = Integer.parseInt(st.nextToken());
-      stations.add(e);
-      visited[e] = true;
+    //2단 배열로 만들어서 시간초과난거같음 -> 그래서 1단 배열로 전역과 다음역을 나타내는 역 2개만듬
+    int[] preArr = new int[1000001];
+    int[] postArr = new int[1000001];
+
+    //첫역 넣기
+    int firstStation = Integer.parseInt(st.nextToken());
+    int prevStation = firstStation;
+
+    //두번째역부터 마지막역 전까지 넣기
+    for (int i = 1; i < N - 1; i++) {
+      int station = Integer.parseInt(st.nextToken());
+      preArr[station] = prevStation;
+      postArr[prevStation] = station;
+      prevStation = station;
     }
+    //마지막역 넣기
+    int LastStation = Integer.parseInt(st.nextToken());
+    postArr[prevStation] = LastStation;
+    preArr[LastStation] = prevStation;
+    postArr[LastStation] = firstStation;
+    preArr[firstStation] = LastStation;
 
     StringBuilder sb = new StringBuilder();
     for (int i = 0; i < M; i++) {
-      String cmd = br.readLine().trim();
-      String[] spl = cmd.split(" ");
-
-      int idx = findIdx(Integer.parseInt(spl[1]));
-
-      if (spl[0].equals("BN") && !visited[Integer.parseInt(spl[2])]) {
-        sb.append(stations.get(toIdx(idx + 1))).append("\n");
-        insert(toIdx(idx + 1), Integer.parseInt(spl[2]));
-      } else if (spl[0].equals("BP") && !visited[Integer.parseInt(spl[2])]) {
-        sb.append(stations.get(toIdx(idx - 1))).append("\n");
-        insert(idx, Integer.parseInt(spl[2]));
-      } else if (spl[0].equals("CN")) {
-        sb.append(stations.get(toIdx(idx + 1))).append("\n");
-        delete(toIdx(idx + 1));
-      } else if (spl[0].equals("CP")) {
-        sb.append(stations.get(toIdx(idx - 1))).append("\n");
-        delete(toIdx(idx - 1));
+      st = new StringTokenizer(br.readLine());
+      String str = st.nextToken();
+      int curStation = Integer.parseInt(st.nextToken());
+      if (str.contains("BN")) {
+        int newStation = Integer.parseInt(st.nextToken());
+        int nextStation = postArr[curStation];
+        sb.append(nextStation).append("\n");
+        postArr[curStation] = newStation;
+        preArr[newStation] = curStation;
+        postArr[newStation] = nextStation;
+        preArr[nextStation] = newStation;
+      } else if (str.contains("BP")) {
+        int newStation = Integer.parseInt(st.nextToken());
+        int beStation = preArr[curStation];
+        sb.append(beStation).append("\n");
+        postArr[beStation] = newStation;
+        preArr[newStation] = beStation;
+        postArr[newStation] = curStation;
+        preArr[curStation] = newStation;
+      } else if (str.contains("CN")) {
+        int nextStation = postArr[curStation];
+        sb.append(nextStation).append("\n");
+        int nextNextStation = postArr[nextStation];
+        postArr[curStation] = nextNextStation;
+        preArr[nextNextStation] = curStation;
+      } else if (str.contains("CP")) {
+        int beStation = preArr[curStation];
+        sb.append(beStation).append("\n");
+        int beBeStation = preArr[beStation];
+        preArr[curStation] = beBeStation;
+        postArr[beBeStation] = curStation;
       }
     }
-    System.out.print(sb);
-    br.close();
+    System.out.println(sb);
   }
 
-  private static int toIdx(int idx) {
-    if (idx == -1) {
-      idx = stations.size() - 1;
-    } else if (idx == stations.size()) {
-      idx = 0;
-    }
-    return idx;
-  }
-
-  private static void insert(int idx, int num) {
-    stations.add(idx, num);
-    visited[num] = true;
-  }
-
-  private static void delete(int idx) {
-    if (idx == -1) {
-      idx = stations.size() - 1;
-    } else if (idx == stations.size()) {
-      idx = 0;
-    }
-    visited[stations.get(idx)] = false;
-    stations.remove(idx);
-  }
-
-  private static int findIdx(int num) {
-    return stations.indexOf(num);
-  }
 
 }
