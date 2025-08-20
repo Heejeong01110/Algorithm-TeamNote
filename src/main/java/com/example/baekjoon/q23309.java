@@ -12,66 +12,71 @@ public class q23309 {
     StringTokenizer st = new StringTokenizer(br.readLine());
     int N = Integer.parseInt(st.nextToken());
     int M = Integer.parseInt(st.nextToken());
-    st = new StringTokenizer(br.readLine());
-    //2단 배열로 만들어서 시간초과난거같음 -> 그래서 1단 배열로 전역과 다음역을 나타내는 역 2개만듬
-    int[] preArr = new int[1000001];
-    int[] postArr = new int[1000001];
+
+    int[] next = new int[1000001];
+    int[] prev = new int[1000001];
 
     //첫역 넣기
-    int firstStation = Integer.parseInt(st.nextToken());
-    int prevStation = firstStation;
+    st = new StringTokenizer(br.readLine());
+    int first = Integer.parseInt(st.nextToken());
+    int pre = first;
 
     //두번째역부터 마지막역 전까지 넣기
     for (int i = 1; i < N - 1; i++) {
       int station = Integer.parseInt(st.nextToken());
-      preArr[station] = prevStation;
-      postArr[prevStation] = station;
-      prevStation = station;
+      prev[station] = pre;
+      next[pre] = station;
+      pre = station;
     }
     //마지막역 넣기
-    int LastStation = Integer.parseInt(st.nextToken());
-    postArr[prevStation] = LastStation;
-    preArr[LastStation] = prevStation;
-    postArr[LastStation] = firstStation;
-    preArr[firstStation] = LastStation;
+    int last = Integer.parseInt(st.nextToken());
+    next[pre] = last;
+    prev[last] = pre;
+    next[last] = first;
+    prev[first] = last;
 
     StringBuilder sb = new StringBuilder();
     for (int i = 0; i < M; i++) {
-      st = new StringTokenizer(br.readLine());
-      String str = st.nextToken();
-      int curStation = Integer.parseInt(st.nextToken());
-      if (str.contains("BN")) {
-        int newStation = Integer.parseInt(st.nextToken());
-        int nextStation = postArr[curStation];
-        sb.append(nextStation).append("\n");
-        postArr[curStation] = newStation;
-        preArr[newStation] = curStation;
-        postArr[newStation] = nextStation;
-        preArr[nextStation] = newStation;
-      } else if (str.contains("BP")) {
-        int newStation = Integer.parseInt(st.nextToken());
-        int beStation = preArr[curStation];
-        sb.append(beStation).append("\n");
-        postArr[beStation] = newStation;
-        preArr[newStation] = beStation;
-        postArr[newStation] = curStation;
-        preArr[curStation] = newStation;
-      } else if (str.contains("CN")) {
-        int nextStation = postArr[curStation];
-        sb.append(nextStation).append("\n");
-        int nextNextStation = postArr[nextStation];
-        postArr[curStation] = nextNextStation;
-        preArr[nextNextStation] = curStation;
-      } else if (str.contains("CP")) {
-        int beStation = preArr[curStation];
-        sb.append(beStation).append("\n");
-        int beBeStation = preArr[beStation];
-        preArr[curStation] = beBeStation;
-        postArr[beBeStation] = curStation;
+      String cmd = br.readLine().trim();
+      String[] spl = cmd.split(" ");
+      int now = Integer.parseInt(spl[1]);
+
+      if (spl[0].equals("BN")) {
+        int newS = Integer.parseInt(spl[2]);
+        int nextS = next[now];
+        sb.append(nextS).append("\n");
+
+        next[now] = newS;
+        next[newS] = nextS;
+        prev[newS] = now;
+        prev[nextS] = newS;
+      } else if (spl[0].equals("BP")) {
+        int newS = Integer.parseInt(spl[2]);
+        int prevS = prev[now];
+        sb.append(prevS).append("\n");
+
+        prev[now] = newS;
+        prev[newS] = prevS;
+        next[prevS] = newS;
+        next[newS] = now;
+      } else if (spl[0].equals("CN")) {
+        int delS = next[now];
+        int nextS = next[delS];
+        sb.append(delS).append("\n");
+
+        next[now] = nextS;
+        prev[nextS] = now;
+      } else if (spl[0].equals("CP")) {
+        int delS = prev[now];
+        int prevS = prev[delS];
+        sb.append(delS).append("\n");
+
+        prev[now] = prevS;
+        next[prevS] = now;
       }
     }
-    System.out.println(sb);
+    System.out.print(sb);
+    br.close();
   }
-
 
 }
