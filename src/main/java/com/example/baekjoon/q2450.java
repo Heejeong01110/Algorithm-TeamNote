@@ -3,111 +3,84 @@ package com.example.baekjoon;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.StringTokenizer;
 
 public class q2450 {
 
-  private static int N, M;
-  private static int[] inp;
+  static int N;
+  static int[] dura;
+  static int[] weight;
+  static int max = Integer.MIN_VALUE;
 
   public static void main(String[] args) throws IOException {
-    run();
-  }
-
-  public static void run() throws IOException {
-    inputData();
-    System.out.print(Solution());
-  }
-
-  private static void inputData() throws IOException {
     BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-
+    StringTokenizer st;
     N = Integer.parseInt(br.readLine());
-    inp = new int[N];
+    dura = new int[N];
+    weight = new int[N];
 
-    StringTokenizer st = new StringTokenizer(br.readLine());
     for (int i = 0; i < N; i++) {
-      inp[i] = Integer.parseInt(st.nextToken());
+      st = new StringTokenizer(br.readLine(), " ");
+      dura[i] = Integer.parseInt(st.nextToken()); // 계란의 내구도
+      weight[i] = Integer.parseInt(st.nextToken()); // 계란의 무게
     }
 
-    br.close();
+    bt(0, 0); // 0번째 계란부터 시작 , 이 땐 깨진 계란 0개
+
+    System.out.println(max);
   }
 
-  private static int Solution() {
-    HashMap<Integer, ArrayList<Integer>> shape = new HashMap<>();
-    int[] shapeCnt = new int[4];
-    for (int i = 0; i < N; i++) {
-      shapeCnt[inp[i]]++;
-      ArrayList<Integer> ary = shape.getOrDefault(inp[i], new ArrayList<>());
-      ary.add(i);
-      shape.put(inp[i], ary);
-    }
-
-    orderDfs(shape, new int[3], 0);
-
-    return 0;
-  }
-
-  private static void orderDfs(HashMap<Integer, ArrayList<Integer>> shape, int[] order, int depth) {
-    if (depth == 3) {
-      dfs(shape, order);
+  static void bt(int idx, int cnt) {
+    // 마지막 계란까지 다 들어봤으면 종료
+    if (idx == N) {
+      // 최댓값 갱신
+      max = Math.max(max, cnt);
       return;
     }
-    for (int i = 1; i <= 3; i++) {
-      order[depth] = i;
-      orderDfs(shape, order, depth + 1);
+    // 손으로 든 계란이 이미 깨졌거나 모든 계란이 이미 다 깨져 있다면
+    if (dura[idx] <= 0 || cnt == N - 1) {
+      // 다음 계란을 들어 봄
+      bt(idx + 1, cnt);
+      return;
     }
-  }
-
-  private static void dfs(HashMap<Integer, ArrayList<Integer>> shape, int[] order) {
-    int[] map = inp.clone();
-    int shapeIdx = -1, tmp = 0;
+    // 다른 계란들과 모두 부딪혀봄
+    int nCnt = cnt;
     for (int i = 0; i < N; i++) {
-      if (i >= tmp) {
-        shapeIdx++;
-        tmp += shape.get(order[shapeIdx]).size();
+      // 손으로 들고 있는 계란과 부딪히려고 하는 계란이 같은 계란이라면 통과
+      if (i == idx) {
+        continue;
       }
-
-      if (map[i] != order[shapeIdx]) {//모양 스위칭 해줘야함
-        int nowShape = map[i]; //현재 위치의 모양
-        int targetShape = order[shapeIdx]; //바꿔야 하는 모양
-
-        //1. 바꿔야 하는 모양 자리와 현재 자리를 1대1로 바꿔주는 경우
-        boolean cngTmp = false;
-
-        int idx = 0; //위치 스위칭할 위치
-        int startIdx = getStartIdx(shape, order, targetShape);
-        for (int j = 0; j < shape.get(targetShape).size(); j++) {
-          if (map[startIdx + j] == targetShape) {
-            int save = map[startIdx + j];
-            map[startIdx + j] = map[i];
-            map[i] = save;
-            cngTmp = true;
-            break;
-          }
-        }
-
-        //2. 제3의 자리랑 바꿔주는 경우
-        if(cngTmp){
-
-        }
+      // 부딪혀 보려고 하는 계란이 이미 깨져있다면 통과
+      if (dura[i] <= 0) {
+        continue;
       }
-
-
+      // 계란끼리 부딪혀봄 (현재 손에 들고 있는 계란의 인덱스, 부딪혀보려는 타겟 계란 인덱스)
+      hitEgg(idx, i);
+      // 부딪혀 봤는데 손에 든 계란이 깨지면 cnt++
+      if (dura[idx] <= 0) {
+        cnt++;
+      }
+      // 부딪혀 봤는데 타겟이 된 계란이 깨지면 cnt++
+      if (dura[i] <= 0) {
+        cnt++;
+      }
+      // 재귀 호출 -> 다음 계란 들어 봄
+      bt(idx + 1, cnt);
+      // for문의 다음 i를 위해 값을 원상복구 해 줌
+      recoveryEgg(idx, i);
+      cnt = nCnt;
     }
   }
 
-  private static int getStartIdx(HashMap<Integer, ArrayList<Integer>> shape, int[] order,
-      int shapeIdx) {
-    int res = 0;
-    for (int i = 0; i < 3; i++) {
-      res += shape.get(order[i]).size();
-      if (order[i] == shapeIdx) {
-        return res;
-      }
-    }
-    return -1;
+  // 계란끼리 부딪혀보는 메소드
+  static void hitEgg(int handEgg, int targetEgg) {
+    dura[targetEgg] -= weight[handEgg];
+    dura[handEgg] -= weight[targetEgg];
+  }
+
+  // 다시 원상복구 하는 메소드
+  static void recoveryEgg(int handEgg, int targetEgg) {
+    dura[targetEgg] += weight[handEgg];
+    dura[handEgg] += weight[targetEgg];
   }
 }
