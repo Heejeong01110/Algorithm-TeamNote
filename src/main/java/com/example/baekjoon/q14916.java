@@ -3,7 +3,6 @@ package com.example.baekjoon;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.Arrays;
 
 public class q14916 {
 
@@ -12,25 +11,23 @@ public class q14916 {
     int N = Integer.parseInt(br.readLine());
     br.close();
 
-    int[] dp = new int[100001];
-    Arrays.fill(dp, -1);
-
-    dp[2] = 1;
-    dp[4] = 2;
-    dp[5] = 1;
-
-    for (int i = 6; i <= N; i++) {
-      int r = Integer.MAX_VALUE;
-      if (dp[i - 5] != -1) {
-        r = dp[i - 5] + 1;
-      }
-      if (dp[i - 2] != -1) {
-        r = Math.min(r, dp[i - 2] + 1);
-      }
-      if (r != Integer.MAX_VALUE) {
-        dp[i] = r;
-      }
+    if (N == 1 || N == 3) {
+      System.out.println(-1);
+      return;
     }
-    System.out.print(dp[N]);
+
+    int five = N / 5;
+    int rem = N % 5;
+
+    while (five >= 0 && rem % 2 != 0) {
+      five--;
+      rem += 5;
+    }
+
+    if (five < 0) {
+      System.out.println(-1);
+    } else {
+      System.out.println(five + rem / 2);
+    }
   }
 }
